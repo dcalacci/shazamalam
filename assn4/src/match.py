@@ -26,10 +26,17 @@ def fft(fpath):
     return np.fft.fft(mono_stream)
 
 def mse(A, B):
-    dist = [(a - b) ** 2 for a, b in zip(A, B)]
+    #convert from complex to real vectors
+    A = map(convert, A)
+    B = map(convert, B)
+    #caluclate euclidean distance between A and B
+    dist = [distance.euclidean(a,b) ** 2 for a, b in zip(A, B)]
     return np.mean(dist)
+
+def convert(complx):
+    return [complx.real, complx.imag]
 
 def similarity(f1, f2):
     ffts = map(fft, [f1, f2])
     print datetime.datetime.now(), "computing mse..."
-    return distance.cosine(ffts[0], ffts[1])
+    return mse(ffts[0], ffts[1])

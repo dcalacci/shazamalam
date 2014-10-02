@@ -4,6 +4,7 @@ import read_wav
 import fft
 import getopt
 import sys
+import match
 
 """
 This is the main executable file we'll run for assn4. 
@@ -78,6 +79,7 @@ def main(argv):
 
 	#look at the fft, oh my theres a lot of info huh
 	print true_sample#fft.fft(true_signal)
+	print match.similarity(true_audio, suspect_audio)
 
 #run maine (1: lops off the leading reference)
 main(sys.argv[1:])
