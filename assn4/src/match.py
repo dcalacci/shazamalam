@@ -13,17 +13,17 @@ def downsample(stream):
 def get_mono(fpath):
     """ Converts the given wav file to 5512Hz PCM Mono
     """
-    print datetime.datetime.now(), "reading file..."
+    #print datetime.datetime.now(), "reading file..."
     samplerate, data = wavfile.read(fpath)
     #print datetime.datetime.now(), "downsampling..."
     #channels = map(downsample, data)
     channels = data
-    print datetime.datetime.now(), "converting to mono..."
+    #print datetime.datetime.now(), "converting to mono..."
     return list(np.mean(t) for t in zip(channels))
 
 def fft(fpath):
     mono_stream = get_mono(fpath)
-    print datetime.datetime.now(), "getting fft..."
+    #print datetime.datetime.now(), "getting fft..."
     return np.fft.fft(mono_stream)
 
 def mse(A, B):
@@ -39,7 +39,7 @@ def convert(complx):
 
 def similarity(f1, f2):
     ffts = map(fft, [f1, f2])
-    print datetime.datetime.now(), "computing mse..."
+    #print datetime.datetime.now(), "computing mse..."
     return mse(ffts[0], ffts[1])
 
 """
