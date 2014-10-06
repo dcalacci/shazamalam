@@ -7,13 +7,15 @@ import collections
 def mean(ns):
     return float(sum(ns) / len(ns))
 
-def is_wave_format(file_input):
+def validate_file(file_input):
     try:
         wave.open(file_input, 'rb')
         return True
+    except IOError:
+        print "ERROR: ", file_input," does not exist"
     except wave.Error:
         print "ERROR: ", file_input," is not a supported format"
-        return False
+    return False
 
 
 def _byte_format(sample_width, num_samples):

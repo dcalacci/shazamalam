@@ -84,8 +84,8 @@ def main(argv):
 
 	#validate that these audio files are legit
 	#formatcheckerrrr
-	true_audio_is_wave = read_wav.is_wave_format(true_audio)
-	suspect_audio_is_wave = read_wav.is_wave_format(suspect_audio)
+	true_audio_is_wave = read_wav.validate_file(true_audio)
+	suspect_audio_is_wave = read_wav.validate_file(suspect_audio)
 	if (not (true_audio_is_wave and suspect_audio_is_wave)):
 		return
 	
