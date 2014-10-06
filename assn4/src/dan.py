@@ -9,7 +9,7 @@ import match
 """
 This is the main executable file we'll run for assn4. 
 
-Just testing fft for now or whatever.
+Just testing fft for now or whatever
 """
 
 """
