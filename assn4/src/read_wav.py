@@ -21,6 +21,13 @@ def _byte_format(sample_width, num_samples):
     else:
         raise ValueError("Only supports 8 and 16 bit audio formats.")
 
+def length(wave_file):
+    wr = wave.open(wave_file, "rb")
+    sample_rate = wr.getframerate()
+    num_frames = wr.getnframes()
+    wr.close()
+
+    return num_frames / float(sample_rate);
 
 def mono_channel(wave_file):
     """Given a file-like object or file path representing a wave file,
