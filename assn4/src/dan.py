@@ -31,10 +31,15 @@ def parse_args(argv):
 
 	#get the audio arguments and options 
 	try:
-	  options, args = getopt.getopt(argv,"f:",["truefile=","suspectfile="])
+	  options, args = getopt.getopt(argv,"f:f:",["truefile=","suspectfile="])
+
+	  #check number of options
+	  if(len(options) < 2):
+	  	print 'ERROR: incorrect command line'
+	  	sys.exit(2)
    
 	except getopt.GetoptError:
-	  print 'dan.py -f <truefile> -f <suspectfile>'
+	  print 'ERROR: incorrect command line'
 	  sys.exit(2)
 
 	#should we be given valid arguments, lets take a look
@@ -49,6 +54,7 @@ def parse_args(argv):
 			else:
 				suspect_audio = arg
 				break
+
 
 	return true_audio, suspect_audio
 
@@ -84,6 +90,10 @@ def main(argv):
 
 	#validate that these audio files are legit
 	#formatcheckerrrr
+	true_audio_is_wave = read_wav.validate_file(true_audio)
+	suspect_audio_is_wave = read_wav.validate_file(suspect_audio)
+	if (not (true_audio_is_wave and suspect_audio_is_wave)):
+		return
 	
 	"""
 	validate that the two files are of the same length
