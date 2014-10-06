@@ -81,39 +81,21 @@ def main(argv):
 	true_audio = ""
 	#delcare audio file 2 (eventually candidate audio?)
 	suspect_audio = ""
-	#preapre a string for our output
-	match_threshold = 10000000 #this is our trial and error threshold
-	match_coefficient = 0
 
 	#parse the audio files from the arguments
 	true_audio, suspect_audio = parse_args(argv)
 
-	#validate that these audio files are legit
-	#formatcheckerrrr
-	true_audio_is_wave = read_wav.validate_file(true_audio)
-	suspect_audio_is_wave = read_wav.validate_file(suspect_audio)
-	if (not (true_audio_is_wave and suspect_audio_is_wave)):
-		return
-	
 	"""
-	validate that the two files are of the same length
+	TODO:
+	In the future, parse_args will handle collecting 
+	entire directories instead
 	"""
-	"""TODO: Remove after ASSN 4"""
-	if(read_wav.length(true_audio) != read_wav.length(suspect_audio)):
-		final_print("NO MATCH", true_audio, suspect_audio)
-	else:
-		#now lets read those wave files
-		true_signal, true_sample = read_wav.mono_channel(true_audio)
-		suspect_signal, suspect_sample = read_wav.mono_channel(suspect_audio)
+	result = match.is_match(true_audio, suspect_audio)
 
-		#look at the fft, oh my theres a lot of info huh
-		match_coefficient = match.similarity(true_audio, suspect_audio) / true_sample
-
-	#final print out to SDTOUT
-	if(match_coefficient < match_threshold):
+	if(result):
 		final_print("MATCH", true_audio, suspect_audio)
 	else:
-		final_print("NO MATCH", "", "")
+		final_print("NO MATCH", true_audio, suspect_audio)
 
 #run maine (1: lops off the leading reference)
 main(sys.argv[1:])
