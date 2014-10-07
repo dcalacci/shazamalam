@@ -22,12 +22,16 @@ class TestAudioMatchingFunctions(unittest.TestCase):
 		self.run_is_match_test("../data/z02.wav", "../data/z03.wav", False)
 		self.run_is_match_test("../data/z04.wav", "../data/z05.wav", False)
 		self.run_is_match_test("../data/z06.wav", "../data/z07.wav", False)
-		self.run_is_match_test("../data/z05.wav", "../data/Sor5308.wav", False)
+		self.run_is_match_test("../data/z05.wav", "../data/Sor3508.wav", False)
 		self.run_is_match_test("../data/Sor4959.wav", "../data/Sor1929.wav", False)
 		self.run_is_match_test("../data/z02.wav", "../data/bad2131.wav", False)
 		self.run_is_match_test("../data/z03.wav", "../data/bad0616.wav", False)
 
-		# test mp3s, nonexistent files!!
+		# Should not accept mp3 format
+		self.run_is_match_test("../data/z05.wav", "../data/Sor3508.mp3", False)
+
+		# Should return false when file doesn't exist
+		self.run_is_match_test("../data/z05.wav", "../data/fakefile.wav", False)
 
 	# running single is_match test
 	def run_is_match_test(self, true_audio, suspect_audio, expected_is_match):

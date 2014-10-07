@@ -57,7 +57,7 @@ def is_match(f1, f2):
 
     #validate that these audio files are legit
     if (not (read_wav.validate_file(f1) and read_wav.validate_file(f2))):
-        return #validate file will handle error messages if validation fails
+        return False #validate file will handle error messages if validation fails
     
     """
     validate that the two files are of the same length
