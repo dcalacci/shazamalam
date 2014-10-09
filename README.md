@@ -19,6 +19,9 @@ directory as defined at:
 
 http://www.ccs.neu.edu/course/cs4500f14/assignment4.txt
 
+The only third party software used is the standard
+python libraries found on the CCIS Linux machines
+
 
 
 
