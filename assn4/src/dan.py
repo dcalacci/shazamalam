@@ -90,7 +90,12 @@ def main(argv):
 	In the future, parse_args will handle collecting 
 	entire directories instead
 	"""
-	result = match.is_match(true_audio, suspect_audio)
+
+        #validate that these audio files are legit
+        if (not (read_wav.validate_file(true_audio) and read_wav.validate_file(suspect_audio))):
+            sys.exit(2)
+	
+        result = match.is_match(true_audio, suspect_audio)
 
 	if(result):
 		final_print("MATCH", true_audio, suspect_audio)
