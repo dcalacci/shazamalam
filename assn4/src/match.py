@@ -14,12 +14,11 @@ def get_mono(fpath):
     """ Converts the given wav file to 5512Hz PCM Mono
     """
     #print datetime.datetime.now(), "reading file..."
-    samplerate, data = wavfile.read(fpath)
+    samplerate, channels = wavfile.read(fpath)
     #print datetime.datetime.now(), "downsampling..."
     #channels = map(downsample, data)
-    channels = data
     #print datetime.datetime.now(), "converting to mono..."
-    return list(np.mean(t) for t in zip(channels))
+    return np.mean(channels, axis=1)
 
 def fft(fpath):
     mono_stream = get_mono(fpath)
