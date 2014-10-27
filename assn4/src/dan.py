@@ -31,10 +31,11 @@ def parse_args(argv):
 
 	#get the audio arguments and options 
 	try:
-	  options, args = getopt.getopt(argv,"f:d:f:d:",["truefile=","suspectfile="])
+	  option_value_hash, command_line_args = getopt.getopt(argv,"f:d:")
+	  #not using command_line_args, arguments in options_value_hash (-option => argument)
 
 	  #check number of options
-	  if(len(options) < 2):
+	  if(len(option_value_hash) < 2):
 	  	print 'ERROR: incorrect command line'
 	  	sys.exit(2)
    
@@ -43,9 +44,9 @@ def parse_args(argv):
 	  sys.exit(2)
 
 	#should we be given valid arguments, lets take a look
-	for option, arg in options:
+	for option, arg in option_value_hash:
 		#if its a file we were passed
-		if option in ("-f", "-d", "--truefile"):
+		if option in ("-f", "-d"):
 			#check the order it was passed in
 			if not true_audio_registered:
 				true_audio = (option, arg)
