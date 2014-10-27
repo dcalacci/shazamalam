@@ -30,6 +30,7 @@ def validate_input(file_input):
     path = file_input[1]
     try:
         if (is_directory(file_input)):
+            os.listdir(path)
             return True
         else:
             return validate_file(path)
