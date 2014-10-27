@@ -28,6 +28,15 @@ def similarity(f1, f2):
     return mse(ffts[0], ffts[1])
 
 """
+final_print:
+print out the final results 
+
+NOTE: this is a process-terminating call
+"""
+def final_print(audio_one_path, audio_two_path):
+    print "MATCH: ", audio_one_path, " ", audio_two_path
+
+"""
 match_files:
 Compares all files, prints matches
 
@@ -39,7 +48,7 @@ def match_files(a1, a2):
         for f2 in a2:
             result = is_match(f1,f2)
             if (result):
-                print  "MATCH", f1, " ", f2
+                final_print(f1,f2)
 
 """
 is_match:

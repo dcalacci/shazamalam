@@ -59,15 +59,6 @@ def parse_args(argv):
 
 	return true_audio, suspect_audio
 
-"""
-final_print:
-print out the final results 
-
-NOTE: this is a process-terminating call
-"""
-def final_print(match, audio_one_path, audio_two_path):
-	print match, audio_one_path, " ", audio_two_path
-	sys.exit(0)
 
 """
 main:
