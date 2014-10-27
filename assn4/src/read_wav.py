@@ -15,20 +15,26 @@ def create_file_array(audio_input):
     else:
         return [audio_input[1]]
 
+def validate_file(file_input):
+    try:
+        wave.open(file_input, 'rb')
+        return True
+    except IOError:
+        print "ERROR: ", file_input," does not exist"
+    except wave.Error:
+        print "ERROR: ", file_input," is not a supported format"
+    return False
+
+
 def validate_input(file_input):
     path = file_input[1]
     try:
         if (is_directory(file_input)):
-            os.listdir(path)
+            return True
         else:
-            wave.open(path, 'rb')
-        return True
-    except IOError:
-        print "ERROR: ", path," does not exist"
+            return validate_file(path)
     except OSError:
         print "ERROR: ", path," does not exist"
-    except wave.Error:
-        print "ERROR: ", path," is not a supported format"
     return False
 
 def length(wave_file):

@@ -93,12 +93,7 @@ def main(argv):
         true_audio = read_wav.create_file_array(true_audio)
         suspect_audio = read_wav.create_file_array(suspect_audio)
 	
-        result = match.is_match(true_audio, suspect_audio)
-
-	if(result):
-		final_print("MATCH", true_audio, suspect_audio)
-	else:
-		final_print("NO MATCH", true_audio, suspect_audio)
+        result = match.match_files(true_audio, suspect_audio)
 
 #run maine (1: lops off the leading reference)
 main(sys.argv[1:])

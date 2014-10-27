@@ -28,6 +28,20 @@ def similarity(f1, f2):
     return mse(ffts[0], ffts[1])
 
 """
+match_files:
+Compares all files, prints matches
+
+INPUT: 2 file arrays
+OUTPUT: Prints all matches
+"""
+def match_files(a1, a2):
+    for f1 in a1:
+        for f2 in a2:
+            result = is_match(f1,f2)
+            if (result):
+                print  "MATCH", f1, " ", f2
+
+"""
 is_match:
 Returns a boolean if we deem that f1 and f2 match
 
@@ -41,13 +55,13 @@ def is_match(f1, f2):
     match_coefficient = 0
 
     #validate that these audio files are legit
-    if (not (read_wav.validate_input(f1) and read_wav.validate_input(f2))):
+    if (not (read_wav.validate_file(f1) and read_wav.validate_file(f2))):
         return False #validate file will handle error messages if validation fails
 
     """
     validate that the two files are of the same length
     """
-    """TODO: Remove after ASSN 4"""
+    """TODO: Remove after ASSN 5"""
     if(read_wav.length(f1) != read_wav.length(f2)):
         return False
     else:
