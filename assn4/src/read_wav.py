@@ -4,10 +4,18 @@ import struct
 import os
 
 # gets tuple of ("-f|-d", [path]) and determines if it's a dir
-def is_directory(audio):
-    return audio[0] == "-d"
+def is_directory(audio_input):
+    return audio_input[0] == "-d"
 
-def validate_file(file_input):
+def create_file_array(audio_input):
+    if (is_directory(audio_input)):
+        dir_path = audio_input[1]
+        input_dir = os.listdir(dir_path)
+        return [(dir_path + '/' + filename) for filename in input_dir]
+    else:
+        return [audio_input[1]]
+
+def validate_input(file_input):
     path = file_input[1]
     try:
         if (is_directory(file_input)):
