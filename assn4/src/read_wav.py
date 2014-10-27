@@ -20,9 +20,9 @@ def validate_file(file_input):
         wave.open(file_input, 'rb')
         return True
     except IOError:
-        print "ERROR: ", file_input," does not exist"
+        print "ERROR: file ", file_input," does not exist"
     except wave.Error:
-        print "ERROR: ", file_input," is not a supported format"
+        print "ERROR: file ", file_input," is not a supported format"
     return False
 
 
@@ -35,7 +35,7 @@ def validate_input(file_input):
         else:
             return validate_file(path)
     except OSError:
-        print "ERROR: ", path," does not exist"
+        print "ERROR: directory ", path," does not exist"
     return False
 
 def length(wave_file):
