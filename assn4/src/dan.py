@@ -31,7 +31,7 @@ def parse_args(argv):
 
 	#get the audio arguments and options 
 	try:
-	  options, args = getopt.getopt(argv,"f:f:",["truefile=","suspectfile="])
+	  options, args = getopt.getopt(argv,"f:d:f:d:",["truefile=","suspectfile="])
 
 	  #check number of options
 	  if(len(options) < 2):
@@ -45,14 +45,14 @@ def parse_args(argv):
 	#should we be given valid arguments, lets take a look
 	for option, arg in options:
 		#if its a file we were passed
-		if option in ("-f", "--truefile"):
+		if option in ("-f", "-d", "--truefile"):
 			#check the order it was passed in
 			if not true_audio_registered:
-				true_audio = arg
+				true_audio = (option, arg)
 				true_audio_registered = True
 			#otherwise
 			else:
-				suspect_audio = arg
+				suspect_audio = (option, arg)
 				break
 
 

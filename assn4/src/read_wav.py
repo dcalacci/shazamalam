@@ -1,15 +1,26 @@
 #!/usr/bin/env python
 import wave
 import struct
+import os
+
+# gets tuple of ("-f|-d", [path]) and determines if it's a dir
+def is_directory(audio):
+    return audio[0] == "-d"
 
 def validate_file(file_input):
+    path = file_input[1]
     try:
-        wave.open(file_input, 'rb')
+        if (is_directory(file_input)):
+            os.listdir(path)
+        else:
+            wave.open(path, 'rb')
         return True
     except IOError:
-        print "ERROR: ", file_input," does not exist"
+        print "ERROR: ", path," does not exist"
+    except OSError:
+        print "ERROR: ", path," does not exist"
     except wave.Error:
-        print "ERROR: ", file_input," is not a supported format"
+        print "ERROR: ", path," is not a supported format"
     return False
 
 def length(wave_file):
