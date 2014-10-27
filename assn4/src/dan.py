@@ -86,15 +86,12 @@ def main(argv):
 	#parse the audio files from the arguments
 	true_audio, suspect_audio = parse_args(argv)
 
-	"""
-	TODO:
-	In the future, parse_args will handle collecting 
-	entire directories instead
-	"""
-
         #validate that these audio files are legit
-        if (not (read_wav.validate_file(true_audio) and read_wav.validate_file(suspect_audio))):
+        if (not (read_wav.validate_input(true_audio) and read_wav.validate_input(suspect_audio))):
             sys.exit(2)
+
+        true_audio = read_wav.create_file_array(true_audio)
+        suspect_audio = read_wav.create_file_array(suspect_audio)
 	
         result = match.is_match(true_audio, suspect_audio)
 

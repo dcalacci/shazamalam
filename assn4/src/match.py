@@ -41,7 +41,7 @@ def is_match(f1, f2):
     match_coefficient = 0
 
     #validate that these audio files are legit
-    if (not (read_wav.validate_file(f1) and read_wav.validate_file(f2))):
+    if (not (read_wav.validate_input(f1) and read_wav.validate_input(f2))):
         return False #validate file will handle error messages if validation fails
 
     """
