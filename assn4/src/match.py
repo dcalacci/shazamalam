@@ -3,7 +3,7 @@ from scipy.io import wavfile
 from scipy.signal import decimate
 from scipy.spatial import distance
 import datetime
-import read_wav
+import read_audio
 
 def downsample(stream):
     """ Downsample from 44100 -> 5512Hz
@@ -61,11 +61,22 @@ def is_match(f1, f2):
     match_threshold = 150000000000 # new threshold from new trial and error
     match_coefficient = 0
 
+    # if ( is_mp3(f1) ) Determine if files are mp3
+    #    f1_tmp = True
+    #    os.system('lame -V2 --silent -decode ' + f1 + ' ' + new_wav_file_path) (or something like that)
+    #    f1 = new_wav_file_path
+    #    
+    # if ( is_mp3(f2) )
+    #    f2_tmp = True
+    #    os.system('lame -V2 --silent -decode ' + f2 + ' ' + new_wav_file_path) (or something like that)
+    #    f2 = new_wav_file_path
+    #
+
     """
     validate that the two files are of the same length
     """
     """TODO: Remove after ASSN 5"""
-    if(read_wav.length(f1) != read_wav.length(f2)):
+    if(read_audio.length(f1) != read_audio.length(f2)):
         return False
     else:
         # get our match coefficient!
@@ -76,3 +87,9 @@ def is_match(f1, f2):
         return True
     else:
         return False
+
+    # if ( f1_tmp )
+    #    delete f1 tmp file
+
+    # if ( f2_tmp )
+    #    delete f2 tmp file
