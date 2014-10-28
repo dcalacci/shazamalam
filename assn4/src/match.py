@@ -29,9 +29,7 @@ def similarity(f1, f2):
 
 """
 final_print:
-print out the final results 
-
-NOTE: this is a process-terminating call
+prints match
 """
 def final_print(audio_one_path, audio_two_path):
     print "MATCH: ", audio_one_path, " ", audio_two_path
@@ -54,7 +52,7 @@ def match_files(a1, a2):
 is_match:
 Returns a boolean if we deem that f1 and f2 match
 
-INPUT: 2 files that may or MAY NOT be valid file paths
+INPUT: 2 files that are valid file paths
 OUTPUT: True if we deem the files match, otherwise False
 """
 def is_match(f1, f2):
@@ -62,10 +60,6 @@ def is_match(f1, f2):
     #preapre a string for our output
     match_threshold = 150000000000 # new threshold from new trial and error
     match_coefficient = 0
-
-    #validate that these audio files are legit
-    if (not (read_wav.validate_file(f1) and read_wav.validate_file(f2))):
-        return False #validate file will handle error messages if validation fails
 
     """
     validate that the two files are of the same length

@@ -7,11 +7,26 @@ import os
 def is_directory(audio_input):
     return audio_input[0] == "-d"
 
+"""
+create_file_array:
+Creates an array of all valid files from input
+If it's a single file, creates a single-element array
+If it's a directory, creates an array with its valid files, 
+filters out files with unsupported formats
+Assumes that audio_input is a valid path to something that exists
+
+INPUT: Valid paths to a file or directory
+OUTPUT: Array of all valid files from input
+"""
 def create_file_array(audio_input):
     if (is_directory(audio_input)):
-        dir_path = audio_input[1]
-        input_dir = os.listdir(dir_path)
-        return [(dir_path + '/' + filename) for filename in input_dir]
+        input_dir = os.listdir(audio_input[1])
+        file_array = []
+        for filename in input_dir:
+             full_filename = audio_input[1] + '/' + filename
+             if (validate_file(full_filename)):
+                file_array.append(full_filename)
+        return file_array
     else:
         return [audio_input[1]]
 
