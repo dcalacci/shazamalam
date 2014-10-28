@@ -3,12 +3,39 @@ import wave
 import struct
 import os
 import sys
+import subprocess
 
 # gets tuple of ("-f|-d", [path]) and determines if it's a dir
 def is_directory(audio_input):
     return audio_input[0] == "-d"
 
+"""
+is_mp3:
+Given a file path, determine if the file is not only an mp3,
+but one with the right specifications. 
+
+INPUT: A file path (at the stage is_mp3 is called, we know
+that the file is a valid file that exists so we dont check for it)
+OUTPUT: True if and only if the file path isL
+    - a valid mp3 file
+    - is MPEG
+    - is Layer III
+    - is the right version : v1 in the header (?) 
+"""
 def is_mp3(file):
+    #first, check the end of the file path
+    if(file[-4:] != ".mp3"):
+        return False
+
+    #then, check that its the right format
+    file_header = subprocess.check_output(["file", file])
+    format_string = "MPEG"
+    layer_string = "layer III"
+    version_string = "v1"
+    if format_string not in file_header or layer_string not in file_header: #currently does not include version
+        return False
+
+    #otherwise
     return True
 
 """
