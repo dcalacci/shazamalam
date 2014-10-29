@@ -61,12 +61,10 @@ def is_match(f1, f2):
     match_threshold = 150000000000 # new threshold from new trial and error
     match_coefficient = 0
 
-    if ( read_audio.is_mp3(f1) ): 
-        f1_tmp = True
+    if ( read_audio.is_mp3(f1) ):
         f1 = read_audio.create_temp_wav_file(f1)
        
     if ( read_audio.is_mp3(f2) ):
-        f2_tmp = True
         f2 = read_audio.create_temp_wav_file(f2)
 
     """
@@ -74,19 +72,17 @@ def is_match(f1, f2):
     """
     """TODO: Remove after ASSN 5"""
     if(read_audio.length(f1) != read_audio.length(f2)):
+        read_audio.delete_temp_file(f1) # only deletes if /tmp is in filepath
+        read_audio.delete_temp_file(f2)
         return False
     else:
         # get our match coefficient!
         match_coefficient = similarity(f1, f2)
+        read_audio.delete_temp_file(f1) # only deletes if /tmp is in filepath
+        read_audio.delete_temp_file(f2)
 
     #final print out to SDTOUT
     if(match_coefficient < match_threshold):
         return True
     else:
         return False
-
-    if ( f1_tmp ):
-        read_audio.delete_temp_file(f1)
-
-    if ( f2_tmp ):
-        read_audio.delete_temp_file(f2)
