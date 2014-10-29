@@ -16,7 +16,7 @@ but one with the right specifications.
 
 INPUT: A file path (at the stage is_mp3 is called, we know
 that the file is a valid file that exists so we dont check for it)
-OUTPUT: True if and only if the file path isL
+OUTPUT: True if and only if the file path is:
     - a valid mp3 file
     - is MPEG
     - is Layer III
@@ -105,7 +105,21 @@ def create_temp_wav_file(file_path):
 
     new_wav_file_path = '/tmp/'+ filename.split('.')[0] + '.wav'
 
-    os.system('/course/cs4500f14/bin/lame -V2 --silent --decode ' + file_path + ' ' + new_wav_file_path)
+    # test if user has lame in system, do subprocess call
+
+    # output to /dev/null
+    FNULL = open(os.devnull, 'w')
+
+    res = subprocess.call(['/usr/bin/env', 'lame'], stdout=FNULL, stderr=subprocess.STDOUT)
+    if res == 1:
+        lame_cmd = ['/usr/bin/env', 'lame']
+    else:
+        lame_cmd = ['/course/cs4500f14/bin/lame']
+    args = ['-V2', '--silent', '--decode', file_path, new_wav_file_path]
+    res = subprocess.call(lame_cmd + args, stdout=FNULL, stderr=subprocess.STDOUT)
+
+    if res != 0:
+        raise Exception("Call to lame failed. It's either not installed or it failed the conversion.")
 
     return new_wav_file_path
 
