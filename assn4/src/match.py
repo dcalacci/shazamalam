@@ -39,14 +39,17 @@ match_files:
 Compares all files, prints matches
 
 INPUT: 2 file arrays
-OUTPUT: Prints all matches
+OUTPUT: List of matches as tuples, also prints all matches
 """
 def match_files(a1, a2):
+    matches = []
     for f1 in a1:
         for f2 in a2:
             result = is_match(f1,f2)
             if (result):
+                matches.append((f1,f2))
                 final_print(f1,f2)
+    return matches
 
 """
 is_match:
