@@ -37,7 +37,7 @@ def is_mp3(file):
 
     #otherwise
     return True
-
+    
 """
 create_file_array:
 Creates an array of all valid files from input
@@ -65,6 +65,9 @@ def create_file_array(audio_input):
         return [audio_input[1]]
 
 def validate_file(file_input):
+    if is_mp3(file_input):
+        return True
+
     try:
         wave.open(file_input, 'rb')
         return True
@@ -94,3 +97,25 @@ def length(wave_file):
     wr.close()
 
     return num_frames / float(sample_rate);
+
+
+def create_temp_wav_file(file_path):
+    path_array = file_path.split('/')
+    filename = path_array[-1]
+
+    path_array[-1] = ''
+    new_wav_file_path = '/'.join(path_array) + 'tmp/'+ filename.split('.')[0] + '.wav'
+
+    os.system('/course/cs4500f14/bin/lame -V2 --silent -decode ' + file_path + ' z' + new_wav_file_path)
+
+    return new_wav_file_path
+
+def delete_temp_file(file_path):
+
+    if '/tmp' in file_path:
+        os.system('rm -f ' + file_path)
+
+
+
+
+
