@@ -46,7 +46,7 @@ If it's a directory, creates an array with its valid files,
 filters out files with unsupported formats
 Assumes that audio_input is a valid path to something that exists
 
-INPUT: Valid paths to a file or directory
+INPUT: Tuple containing valid path to a file or directory
 OUTPUT: Array of all valid files from input
 """
 def create_file_array(audio_input):
@@ -64,6 +64,8 @@ def create_file_array(audio_input):
     else:
         return [audio_input[1]]
 
+# INPUT: file path
+# OUTPUT: Boolean
 def validate_file(file_input):
     try:
         wave.open(file_input, 'rb')
@@ -77,11 +79,12 @@ def validate_file(file_input):
         print "ERROR: file ", file_input," is not a supported format"
     return False
 
-
-def validate_input(file_input):
-    path = file_input[1]
+# INPUT: tuple (may be file or dir)
+# OUTPUT: Boolean
+def validate_input(audio_input):
+    path = audio_input[1]
     try:
-        if (is_directory(file_input)):
+        if (is_directory(audio_input)):
             os.listdir(path)
             return True
         else:
