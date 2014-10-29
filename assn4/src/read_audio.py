@@ -65,15 +65,15 @@ def create_file_array(audio_input):
         return [audio_input[1]]
 
 def validate_file(file_input):
-    if is_mp3(file_input):
-        return True
-
     try:
         wave.open(file_input, 'rb')
         return True
     except IOError:
         print "ERROR: file ", file_input," does not exist"
     except wave.Error:
+        if is_mp3(file_input):
+        return True
+        
         print "ERROR: file ", file_input," is not a supported format"
     return False
 
