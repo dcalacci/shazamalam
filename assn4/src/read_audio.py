@@ -106,7 +106,7 @@ def create_temp_wav_file(file_path):
     path_array[-1] = ''
     new_wav_file_path = '/'.join(path_array) + 'tmp/'+ filename.split('.')[0] + '.wav'
 
-    os.system('/course/cs4500f14/bin/lame -V2 --silent -decode ' + file_path + ' z' + new_wav_file_path)
+    os.system('/course/cs4500f14/bin/lame -V2 --silent --decode ' + file_path + ' ' + new_wav_file_path)
 
     return new_wav_file_path
 
