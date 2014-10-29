@@ -17,7 +17,7 @@ command to create the executable:
 After that ./dan should be available from this
 directory as defined at:
 
-http://www.ccs.neu.edu/course/cs4500f14/assignment4.txt
+http://www.ccs.neu.edu/course/cs4500f14/assignment5.txt
 
 The only third party software used is the LAME
 encoder, the standard linux ‘file’ command and
