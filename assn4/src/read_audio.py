@@ -72,8 +72,8 @@ def validate_file(file_input):
         print "ERROR: file ", file_input," does not exist"
     except wave.Error:
         if is_mp3(file_input):
-        return True
-        
+            return True
+
         print "ERROR: file ", file_input," is not a supported format"
     return False
 
