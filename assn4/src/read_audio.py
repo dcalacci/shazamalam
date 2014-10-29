@@ -12,7 +12,7 @@ def is_directory(audio_input):
 """
 is_mp3:
 Given a file path, determine if the file is not only an mp3,
-but one with the right specifications. 
+but one with the right specifications.
 
 INPUT: A file path (at the stage is_mp3 is called, we know
 that the file is a valid file that exists so we dont check for it)
@@ -20,7 +20,7 @@ OUTPUT: True if and only if the file path isL
     - a valid mp3 file
     - is MPEG
     - is Layer III
-    - is the right version : v1 in the header (?) 
+    - is the right version : v1 in the header (?)
 """
 def is_mp3(file):
     #first, check the end of the file path
@@ -37,12 +37,12 @@ def is_mp3(file):
 
     #otherwise
     return True
-    
+
 """
 create_file_array:
 Creates an array of all valid files from input
 If it's a single file, creates a single-element array
-If it's a directory, creates an array with its valid files, 
+If it's a directory, creates an array with its valid files,
 filters out files with unsupported formats
 Assumes that audio_input is a valid path to something that exists
 
@@ -72,8 +72,8 @@ def validate_file(file_input):
         print "ERROR: file ", file_input," does not exist"
     except wave.Error:
         if is_mp3(file_input):
-        return True
-        
+            return True
+
         print "ERROR: file ", file_input," is not a supported format"
     return False
 
@@ -113,8 +113,3 @@ def delete_temp_file(file_path):
 
     if '/tmp' in file_path:
         os.system('rm -f ' + file_path)
-
-
-
-
-

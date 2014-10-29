@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 #import numpy
 import read_audio
-import fft
 import getopt
 import sys
 import match
