@@ -7,7 +7,7 @@ import sys
 import match
 
 """
-This is the main executable file we'll run for assn4. 
+This is the main executable file we'll run for assn4.
 
 Just testing fft for now or whatever
 """
@@ -29,7 +29,7 @@ def parse_args(argv):
 	#temporary flag for checking which file is which
 	true_audio_registered = False
 
-	#get the audio arguments and options 
+	#get the audio arguments and options
 	try:
 	  option_value_hash, command_line_args = getopt.getopt(argv,"f:d:")
 	  #not using command_line_args, arguments in options_value_hash (-option => argument)
@@ -38,7 +38,7 @@ def parse_args(argv):
 	  if(len(option_value_hash) < 2):
 	  	print 'ERROR: incorrect command line'
 	  	sys.exit(2)
-   
+
 	except getopt.GetoptError:
 	  print 'ERROR: incorrect command line'
 	  sys.exit(2)
@@ -68,7 +68,7 @@ INPUT: Command line arguments without the leading reference
 OUTPUT: Results of dan's main functionality a.k.a. commparing two audio files
 """
 def main(argv):
-	
+
 	#delcare audio file 1 (eventually artist audio?)
 	true_audio = ""
 	#delcare audio file 2 (eventually candidate audio?)
@@ -83,7 +83,7 @@ def main(argv):
 
         true_audio = read_wav.create_file_array(true_audio)
         suspect_audio = read_wav.create_file_array(suspect_audio)
-	
+
         result = match.match_files(true_audio, suspect_audio)
 
 #run maine (1: lops off the leading reference)
