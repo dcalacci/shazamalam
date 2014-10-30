@@ -14,6 +14,9 @@ def get_mono(fpath):
     """ Converts the given wav file to 5512Hz PCM Mono
     """
     samplerate, channels = wavfile.read(fpath)
+    # check if it's mono (there's a test file that's not in stereo)
+    if type(channels) != tuple:
+        return channels
     return np.mean(channels, axis=1)
 
 def fft(fpath):
