@@ -15,8 +15,11 @@ def get_mono(fpath):
     """
     samplerate, channels = wavfile.read(fpath)
     # check if it's mono (there's a test file that's not in stereo)
-    if type(channels) != tuple:
-        return channels
+
+    # This was messing up the matching/similarity, commenting out for now
+    # if type(channels) != tuple:
+    #     return channels
+
     return np.mean(channels, axis=1)
 
 def fft(fpath):
