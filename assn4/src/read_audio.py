@@ -67,22 +67,24 @@ def create_file_array(audio_input):
 # INPUT: file path
 # OUTPUT: Boolean
 def validate_file(file_input):
+    short_name = os.path.basename(file_input)
     try:
         wave.open(file_input, 'rb')
         return True
     except IOError:
-        print "ERROR: file ", file_input," does not exist"
+        print "ERROR: file ", short_name," does not exist"
     except wave.Error:
         if is_mp3(file_input):
             return True
 
-        print "ERROR: file ", file_input," is not a supported format"
+        print "ERROR: file ", short_name," is not a supported format"
     return False
 
 # INPUT: tuple (may be file or dir)
 # OUTPUT: Boolean
 def validate_input(audio_input):
     path = audio_input[1]
+    short_name = os.path.basename(path)
     try:
         if (is_directory(audio_input)):
             os.listdir(path)
@@ -90,7 +92,7 @@ def validate_input(audio_input):
         else:
             return validate_file(path)
     except OSError:
-        print "ERROR: directory ", path," does not exist"
+        print "ERROR: directory ", short_name," does not exist"
     return False
 
 def length(wave_file):
