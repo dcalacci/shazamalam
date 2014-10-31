@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 #import numpy
-import read_wav
-import fft
+import read_audio
 import getopt
 import sys
 import match
@@ -78,11 +77,11 @@ def main(argv):
 	true_audio, suspect_audio = parse_args(argv)
 
         #validate that these audio files are legit
-        if (not (read_wav.validate_input(true_audio) and read_wav.validate_input(suspect_audio))):
+        if (not (read_audio.validate_input(true_audio) and read_audio.validate_input(suspect_audio))):
             sys.exit(2)
 
-        true_audio = read_wav.create_file_array(true_audio)
-        suspect_audio = read_wav.create_file_array(suspect_audio)
+        true_audio = read_audio.create_file_array(true_audio)
+        suspect_audio = read_audio.create_file_array(suspect_audio)
 
         result = match.match_files(true_audio, suspect_audio)
 

@@ -4,6 +4,7 @@ from scipy.signal import decimate
 from scipy.spatial import distance
 import datetime
 import read_audio
+import os
 
 def downsample(stream):
     """ Downsample from 44100 -> 5512Hz
@@ -14,6 +15,12 @@ def get_mono(fpath):
     """ Converts the given wav file to 5512Hz PCM Mono
     """
     samplerate, channels = wavfile.read(fpath)
+    # check if it's mono (there's a test file that's not in stereo)
+
+    # This was messing up the matching/similarity, commenting out for now
+    # if type(channels) != tuple:
+    #     return channels
+
     return np.mean(channels, axis=1)
 
 def fft(fpath):
@@ -31,22 +38,28 @@ def similarity(f1, f2):
 final_print:
 prints match
 """
-def final_print(audio_one_path, audio_two_path):
-    print "MATCH: ", audio_one_path, " ", audio_two_path
+def final_print(audio_1_path, audio_2_path):
+    print "MATCH: ", filename(audio_1_path), " ", filename(audio_2_path)
+
+def filename(path):
+    return os.path.basename(path)
 
 """
 match_files:
 Compares all files, prints matches
 
 INPUT: 2 file arrays
-OUTPUT: Prints all matches
+OUTPUT: List of matches as tuples, also prints all matches
 """
 def match_files(a1, a2):
+    matches = []
     for f1 in a1:
         for f2 in a2:
             result = is_match(f1,f2)
             if (result):
+                matches.append((f1,f2))
                 final_print(f1,f2)
+    return matches
 
 """
 is_match:
@@ -61,35 +74,28 @@ def is_match(f1, f2):
     match_threshold = 150000000000 # new threshold from new trial and error
     match_coefficient = 0
 
-    # if ( is_mp3(f1) ) Determine if files are mp3
-    #    f1_tmp = True
-    #    os.system('lame -V2 --silent -decode ' + f1 + ' ' + new_wav_file_path) (or something like that)
-    #    f1 = new_wav_file_path
-    #
-    # if ( is_mp3(f2) )
-    #    f2_tmp = True
-    #    os.system('lame -V2 --silent -decode ' + f2 + ' ' + new_wav_file_path) (or something like that)
-    #    f2 = new_wav_file_path
-    #
+    if ( read_audio.is_mp3(f1) ):
+        f1 = read_audio.create_temp_wav_file(f1)
+
+    if ( read_audio.is_mp3(f2) ):
+        f2 = read_audio.create_temp_wav_file(f2)
 
     """
     validate that the two files are of the same length
     """
     """TODO: Remove after ASSN 5"""
     if(read_audio.length(f1) != read_audio.length(f2)):
+        read_audio.delete_temp_file(f1) # only deletes if /tmp is in filepath
+        read_audio.delete_temp_file(f2)
         return False
     else:
         # get our match coefficient!
         match_coefficient = similarity(f1, f2)
+        read_audio.delete_temp_file(f1) # only deletes if /tmp is in filepath
+        read_audio.delete_temp_file(f2)
 
     #final print out to SDTOUT
     if(match_coefficient < match_threshold):
         return True
     else:
         return False
-
-    # if ( f1_tmp )
-    #    delete f1 tmp file
-
-    # if ( f2_tmp )
-    #    delete f2 tmp file
