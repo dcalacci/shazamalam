@@ -4,6 +4,7 @@ from scipy.signal import decimate
 from scipy.spatial import distance
 import datetime
 import read_audio
+import os
 
 def downsample(stream):
     """ Downsample from 44100 -> 5512Hz
@@ -37,8 +38,11 @@ def similarity(f1, f2):
 final_print:
 prints match
 """
-def final_print(audio_one_path, audio_two_path):
-    print "MATCH: ", audio_one_path, " ", audio_two_path
+def final_print(audio_1_path, audio_2_path):
+    print "MATCH: ", filename(audio_1_path), " ", filename(audio_2_path)
+
+def filename(path):
+    return os.path.basename(path)
 
 """
 match_files:
