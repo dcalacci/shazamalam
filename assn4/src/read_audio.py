@@ -1,28 +1,50 @@
 #!/usr/bin/env python
+from scipy.io import wavfile
+import numpy as np
 import wave
 import struct
 import os
 import sys
 import subprocess
 
+
+def get_mono(fpath):
+    """ Converts the given wav file to 44100 PCM Mono.
+    """
+    if is_mp3(fpath):
+        fpath = create_temp_wav_file(fpath)
+    samplerate, channels = wavfile.read(fpath)
+
+    # if it's mono
+    if type(channels[0]) != np.ndarray:
+        return channels
+
+    if samplerate != 44100:
+        raise Exception("File at " + fpath + " isn't 44100 sample rate, breaking...")
+
+    #TODO: Handle mono files correctly.
+
+    return np.mean(channels, axis=1)
+
 # gets tuple of ("-f|-d", [path]) and determines if it's a dir
 def is_directory(audio_input):
     return audio_input[0] == "-d"
 
-"""
-is_mp3:
-Given a file path, determine if the file is not only an mp3,
-but one with the right specifications.
 
-INPUT: A file path (at the stage is_mp3 is called, we know
-that the file is a valid file that exists so we dont check for it)
-OUTPUT: True if and only if the file path is:
-    - a valid mp3 file
-    - is MPEG
-    - is Layer III
-    - is the right version : v1 in the header (?)
-"""
 def is_mp3(file):
+    """
+    is_mp3:
+    Given a file path, determine if the file is not only an mp3,
+    but one with the right specifications.
+
+    INPUT: A file path (at the stage is_mp3 is called, we know
+    that the file is a valid file that exists so we dont check for it)
+    OUTPUT: True if and only if the file path is:
+        - a valid mp3 file
+        - is MPEG
+        - is Layer III
+        - is the right version : v1 in the header (?)
+    """
     #first, check the end of the file path
     if(file[-4:] != ".mp3"):
         return False
@@ -38,18 +60,19 @@ def is_mp3(file):
     #otherwise
     return True
 
-"""
-create_file_array:
-Creates an array of all valid files from input
-If it's a single file, creates a single-element array
-If it's a directory, creates an array with its valid files,
-filters out files with unsupported formats
-Assumes that audio_input is a valid path to something that exists
 
-INPUT: Tuple containing valid path to a file or directory
-OUTPUT: Array of all valid files from input
-"""
 def create_file_array(audio_input):
+    """
+    create_file_array:
+    Creates an array of all valid files from input
+    If it's a single file, creates a single-element array
+    If it's a directory, creates an array with its valid files,
+    filters out files with unsupported formats
+    Assumes that audio_input is a valid path to something that exists
+
+    INPUT: Tuple containing valid path to a file or directory
+    OUTPUT: Array of all valid files from input
+    """
     if (is_directory(audio_input)):
         input_dir = os.listdir(audio_input[1])
         file_array = []
@@ -63,6 +86,7 @@ def create_file_array(audio_input):
         return file_array
     else:
         return [audio_input[1]]
+
 
 # INPUT: file path
 # OUTPUT: Boolean
@@ -80,6 +104,7 @@ def validate_file(file_input):
         print "ERROR: file ", short_name," is not a supported format"
     return False
 
+
 # INPUT: tuple (may be file or dir)
 # OUTPUT: Boolean
 def validate_input(audio_input):
@@ -94,6 +119,7 @@ def validate_input(audio_input):
     except OSError:
         print "ERROR: directory ", short_name," does not exist"
     return False
+
 
 def length(wave_file):
     wr = wave.open(wave_file, "rb")
@@ -127,6 +153,7 @@ def create_temp_wav_file(file_path):
         raise Exception("Call to lame failed. It's either not installed or it failed the conversion.")
 
     return new_wav_file_path
+
 
 def delete_temp_file(file_path):
 
