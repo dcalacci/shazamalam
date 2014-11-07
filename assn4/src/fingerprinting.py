@@ -106,5 +106,5 @@ def hash_peaks(filtered_peaks):
         # of the form (MD5, time)
         for fprint in prints:
             h = hashlib.md5('{0}|{1}|{2}'.format(fprint[0], fprint[1], fprint[2]))
-            fingerprints.extend((h.hexdigest(), i))
+            fingerprints.append((h.hexdigest(), i))
     return fingerprints
