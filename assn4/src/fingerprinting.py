@@ -10,27 +10,30 @@ WINDOW_SIZE = 4096 # granularity of chunks
 SAMPLE_RATE = 44100 # by nyquist or whatever
 OVERLAP_RATIO = 0.5 # amount our chunks can overlap
 
-def get_fingerprints(samples):
+def get_fingerprints(samples, plot=[False, False]):
     """Give it a mono stream, yo
     """
-    spectrogram = get_spectrogram(samples)
+    spectrogram = get_spectrogram(samples, plot=plot[0])
 
     # get peaks
-    peaks = get_peaks(spectrogram)
+    peaks = get_peaks(spectrogram, plot=plot[1])
 
     # hash them!
-
     fingerprints = hash_peaks(peaks)
 
     return fingerprints
 
 
-def get_spectrogram(samples):
-    spectrogram = mlab.specgram(samples,
-                               NFFT=WINDOW_SIZE,
-                               Fs=SAMPLE_RATE,
-                               window=mlab.window_hanning,
-                               noverlap = int(WINDOW_SIZE * OVERLAP_RATIO))[0]
+def get_spectrogram(samples, plot=False):
+    if plot:
+        f = plt
+    else:
+        f = mlab
+    spectrogram = f.specgram(samples,
+                             NFFT=WINDOW_SIZE,
+                             Fs=SAMPLE_RATE,
+                             window=mlab.window_hanning,
+                             noverlap = int(WINDOW_SIZE * OVERLAP_RATIO))[0]
     # log the result
     spectrogram = 10 * np.log10(spectrogram)
 
@@ -41,9 +44,9 @@ def get_spectrogram(samples):
 
 
 
-AMPLITUDE_THRESHOLD = 20
+AMPLITUDE_THRESHOLD = 40
 
-def get_peaks(spectrogram):
+def get_peaks(spectrogram, plot=False):
     """Gets all the peaks from this spectrogram.
     """
     # generate the filter pattern (neighborhoods)
@@ -73,6 +76,16 @@ def get_peaks(spectrogram):
 
     filtered_peaks = [p for p in all_peaks if p[2] > AMPLITUDE_THRESHOLD]
 
+    if plot:
+        fig = plt.figure()
+        ax1 = fig.add_subplot(111)
+
+        fingerprints = zip(*filtered_peaks)
+        x, y = fingerprints[0], fingerprints[1]
+        ax1.pcolor(spectrogram)
+        ax1.scatter(x, y, c= 'blue')
+        plt.show()
+
     return filtered_peaks
 
 FINGERPRINT_PAIR_DISTANCE = 19
@@ -91,8 +104,9 @@ def hash_peaks(filtered_peaks):
         prints = [(peak[1], p[1], (p[0] - peak[0])) for p in potential_pairs]
         fingerprints.extend(prints)
 
+    # of the form (SHA, time)
     hashes = []
     for fprint in fingerprints:
         h = hashlib.md5('{0}|{1}|{2}'.format(fprint[0], fprint[1], fprint[2]))
-        hashes.append(h.hexdigest())
+        hashes.append((h.hexdigest(), i))
     return hashes
