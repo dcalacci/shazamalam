@@ -1,12 +1,4 @@
-import numpy as np
-from scipy.io import wavfile
-from scipy.signal import decimate
-from scipy.spatial import distance
 from collections import defaultdict
-import datetime
-import read_audio
-import fingerprinting
-import os
 from datastore import *
 
 
@@ -45,13 +37,30 @@ def get_matches(hash_tuples):
         match_counter[offset_diff][song_id] += 1
         # update the most likely song if the highest count changes.
         count = match_counter[offset_diff][song_id]
-        if  count > most_likely_song[1]:
-            # print "updating count to song:", song_id, "with count:", count
-            # print "--"
+        if count > most_likely_song[1]:
             most_likely_song = (song_id, count)
     # return the most likely song's ID
-    #print matches
     return most_likely_song[0]
+
+
+def _jaccard(s1, s2):
+    """ Jaccard similarity of two sets
+    """
+    return float(len(s1.intersection(s2))) / len(s1.union(s2))
+
+
+def is_match(f1, f2):
+    """Returns True if f1 matches to f2.
+
+    right now, f1 matches to f2 if the jaccard similarity of their fingerprints
+    is greater than 50%.
+
+    TODO: This should be changed to incorporate offsets too, right?
+    """
+    mono1, mono2 = match.get_mono(f1), match.get_mono(f2)
+    fingerprints = [fingerprinting.get_fingerprints(m) for m in (mono1, mono2)]
+    fingerprints = map(set, fingerprints)
+    return jaccard(fingerprints[0], fingerprints[1]) > 0.5
 
 
 # """
