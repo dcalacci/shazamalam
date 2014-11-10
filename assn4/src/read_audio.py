@@ -2,7 +2,6 @@
 from scipy.io import wavfile
 import numpy as np
 import wave
-import struct
 import os
 import sys
 import subprocess
@@ -22,9 +21,10 @@ def get_mono(fpath):
     if samplerate != 44100:
         raise Exception("File at " + fpath + " isn't 44100 sample rate, breaking...")
 
-    #TODO: Handle mono files correctly.
+    # TODO: Handle mono files correctly.
 
     return np.mean(channels, axis=1)
+
 
 # gets tuple of ("-f|-d", [path]) and determines if it's a dir
 def is_directory(audio_input):
@@ -45,19 +45,20 @@ def is_mp3(file):
         - is Layer III
         - is the right version : v1 in the header (?)
     """
-    #first, check the end of the file path
+    # first, check the end of the file path
     if(file[-4:] != ".mp3"):
         return False
 
-    #then, check that its the right format
+    # then, check that its the right format
     file_header = subprocess.check_output(["file", file])
     format_string = "MPEG"
     layer_string = "layer III"
     version_string = "v1"
-    if format_string not in file_header or layer_string not in file_header: #currently does not include version
+    # currently does not include version
+    if format_string not in file_header or layer_string not in file_header:
         return False
 
-    #otherwise
+    # otherwise
     return True
 
 
@@ -96,12 +97,12 @@ def validate_file(file_input):
         wave.open(file_input, 'rb')
         return True
     except IOError:
-        print "ERROR: file ", short_name," does not exist"
+        print "ERROR: file ", short_name, " does not exist"
     except wave.Error:
         if is_mp3(file_input):
             return True
 
-        print "ERROR: file ", short_name," is not a supported format"
+        print "ERROR: file ", short_name, " is not a supported format"
     return False
 
 
@@ -117,7 +118,7 @@ def validate_input(audio_input):
         else:
             return validate_file(path)
     except OSError:
-        print "ERROR: directory ", short_name," does not exist"
+        print "ERROR: directory ", short_name, " does not exist"
     return False
 
 
@@ -127,27 +128,31 @@ def length(wave_file):
     num_frames = wr.getnframes()
     wr.close()
 
-    return num_frames / float(sample_rate);
+    return num_frames / float(sample_rate)
 
 
 def create_temp_wav_file(file_path):
+    """Creates a temporary wav file from the given mp3 file.
+
+    Returns the full path of the temporary wav file.
+    """
     path_array = file_path.split('/')
     filename = path_array[-1]
-
-    new_wav_file_path = '/tmp/'+ filename.split('.')[0] + '.wav'
-
+    new_wav_file_path = '/tmp/' + filename.split('.')[0] + '.wav'
     # test if user has lame in system, do subprocess call
-
     # output to /dev/null
     FNULL = open(os.devnull, 'w')
-
-    res = subprocess.call(['/usr/bin/env', 'lame'], stdout=FNULL, stderr=subprocess.STDOUT)
+    res = subprocess.call(['/usr/bin/env', 'lame'],
+                          stdout=FNULL,
+                          stderr=subprocess.STDOUT)
     if res == 1:
         lame_cmd = ['/usr/bin/env', 'lame']
     else:
         lame_cmd = ['/course/cs4500f14/bin/lame']
     args = ['-V2', '--silent', '--decode', file_path, new_wav_file_path]
-    res = subprocess.call(lame_cmd + args, stdout=FNULL, stderr=subprocess.STDOUT)
+    res = subprocess.call(lame_cmd + args,
+                          stdout=FNULL,
+                          stderr=subprocess.STDOUT)
 
     if res != 0:
         raise Exception("Call to lame failed. It's either not installed or it failed the conversion.")
@@ -156,6 +161,5 @@ def create_temp_wav_file(file_path):
 
 
 def delete_temp_file(file_path):
-
     if '/tmp' in file_path:
         os.system('rm -f ' + file_path)
