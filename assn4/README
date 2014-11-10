@@ -1,6 +1,8 @@
 shazamalam
 ==========
 
+Current data: scp -r <username>@turtles.ccs.neu.edu:/course/cs4500f14/Assignments/A6 ./data/
+
 Team Members:
 - Dan Calacci	(calacci.d@husky.neu.edu)
 - Lucas Haber	(haber.l@husky.neu.edu)
