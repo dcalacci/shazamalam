@@ -28,6 +28,7 @@ def get_matches_for_hashes(hashes):
 
 def get_matches(hash_tuples):
     """list of (MD5, offset) -> list of (songid, offset_dif)
+    Assumes that what you're matching against is already in the datastore.
     """
     most_likely_song = (None, 0)
     # {offset_diff: {song_id: #collisions} ...}
@@ -44,24 +45,36 @@ def get_matches(hash_tuples):
     return most_likely_song[0]
 
 
-def _jaccard(s1, s2):
-    """ Jaccard similarity of two sets
-    """
-    return float(len(s1.intersection(s2))) / len(s1.union(s2))
-
+MATCH_THRESHOLD = 5
 
 def is_match(f1, f2):
     """Returns True if f1 matches to f2.
 
-    right now, f1 matches to f2 if the jaccard similarity of their fingerprints
-    is greater than 50%.
+    Currently works by comparing the number of matched fingerprints
+    that occur at the same offset difference between the two songs.
 
-    TODO: This should be changed to incorporate offsets too, right?
+    If this number is greater than MATCH_THRESHOLD, then it returns
+    True.
+
+    Wow, code reuse. Remind yourself to kick dan.
+    Not very :herb:
     """
-    mono1, mono2 = match.get_mono(f1), match.get_mono(f2)
+    mono1, mono2 = read_audio.get_mono(f1), read_audio.get_mono(f2)
     fingerprints = [fingerprinting.get_fingerprints(m) for m in (mono1, mono2)]
-    fingerprints = map(set, fingerprints)
-    return jaccard(fingerprints[0], fingerprints[1]) > 0.5
+
+    # {offset_diff -> {fingerprint -> count}}
+    match_counter = defaultdict(int)
+    max_count = 0
+    for print1, offset1 in fingerprints[0]:
+        for print2, offset2 in fingerprints[1]:
+            if print1 == print2:
+                offset_diff = abs(offset1 - offset2)
+                match_counter[offset_diff] += 1
+                count = match_counter[offset_diff]
+                if count > max_count:
+                    max_count = count
+    if max_count > MATCH_THRESHOLD:
+        return True
 
 
 def final_print(audio_1_path, audio_2_path):
