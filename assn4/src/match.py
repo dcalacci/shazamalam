@@ -3,27 +3,39 @@ from os.path import basename
 from datastore import *
 
 
+# threshold for number of matching fingerprints in a given time offset
+# to produce a match
+MATCH_THRESHOLD = 5
+
+
 def get_matches_for_hashes(hashes):
     """ hashes are a list of (md5, offset)
     Returns a list of (song_id, offset_diff) for each match.
     """
-
     # list of (md5, offset, song_id)
-    lines = [l.strip() for l in open(FINGERPRINT_FILE, 'rb').readlines()]
-    lines = [line.split('|') for line in lines]
+    fprints = get_fingerprints()
 
-    # create dict of md5 -> (offset, song_id)
-    # get all tuples that match our hashes
-    stored_hashes = {t[0]: map(int, t[1:]) for t in lines}
-    matches = [(h[0], stored_hashes.get(h[0])) for h in hashes if h[0] in stored_hashes]
-    matches = [[m[0], m[1][0], m[1][1]] for m in matches]
+    # creates a dict of md5 -> (offset, song_id)
+    stored_hashes = {t[0]: map(int, t[1:]) for t in fprints}
 
+    # get all tuples that match our hashes.
+    # matches will contain a list of tuples of the form:
+    # (md5, database_offset, database_song_id)
+    matches = []
+    for h in hashes:
+        if h[0] in stored_hashes:
+            db_offset, db_song_id = stored_hashes.get(h[0])
+            matches.append((h[0], db_offset, db_song_id))
+
+    # create a dictionary of our query song offsets from the hashes
     query_offsets = dict(hashes)
 
-    # list of (song_id, offset_diff)
-    # we compute the difference between the offset of this match in our database
-    # and the offset of the given sample.
-    return [(song_id, offset - query_offsets[h]) for h, offset, song_id in matches]
+    # returns a list of (song_id, offset_diff)
+    # we compute the difference between the offset of this match in
+    # our database and the offset of the given sample.
+
+    for h, offset, song_id in matches:
+        yield(song_id, offset - query_offsets[h])
 
 
 def get_matches(hash_tuples):
@@ -45,7 +57,8 @@ def get_matches(hash_tuples):
     return most_likely_song[0]
 
 
-MATCH_THRESHOLD = 5
+
+
 
 def is_match(f1, f2):
     """Returns True if f1 matches to f2.
@@ -81,7 +94,6 @@ def final_print(audio_1_path, audio_2_path):
     """Prints matches according to black-box spec
     """
     print "MATCH: ", basename(audio_1_path), " ", basename(audio_2_path)
-
 
 
 
