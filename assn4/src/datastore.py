@@ -1,10 +1,21 @@
 import fingerprinting
 import read_audio
 import os
-import numpy as np
 
 SONG_ID_FILE = "/tmp/songs.txt"
 FINGERPRINT_FILE = "/tmp/fingerprints.txt"
+
+
+def get_fingerprints():
+    """Retrieves all the stored fingerprints.
+    Returns a list of tuples. Each tuple is of the form:
+
+    (md5, offset, song_id)
+    """
+    lines = [l.strip() for l in open(FINGERPRINT_FILE, 'rb').readlines()]
+    lines = [line.split('|') for line in lines]
+    return lines
+
 
 def save_song(fpath):
     """Saves the given song.
