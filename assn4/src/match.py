@@ -57,9 +57,6 @@ def get_matches(hash_tuples):
     return most_likely_song[0]
 
 
-
-
-
 def is_match(f1, f2):
     """Returns True if f1 matches to f2.
 
