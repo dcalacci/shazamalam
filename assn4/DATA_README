@@ -1,0 +1,33 @@
+Quick summary of files in D3:
+
+
+bad_guy_in_yer_bar.wav
+Duration:      33.228820861678
+
+MMW.wav
+Duration:      37.382290249433105
+
+Piste1.wav
+Duration:      142.94204081632654
+
+Sor3508.wav
+Duration:      79.67453514739229
+
+WhoopeeTiYiYo.wav
+Duration:      150.57086167800455
+
+
+
+The other files were created as follows:
+
+
+% /course/cs4500f14/bin/wav --extract 17.8 25.0 bad_guy_in_yer_bar.wav b.wav
+% /course/cs4500f14/bin/wav --extract 8.3 24.3 MMW.wav m.wav
+% /course/cs4500f14/bin/wav --extract 101.0 135.0 Piste1.wav p.wav
+% /course/cs4500f14/bin/wav --extract 36.8 48.9 Sor3508.wav s.wav
+% /course/cs4500f14/bin/wav --extract 40.0 65.0 WhoopeeTiYiYo.wav w.wav
+
+% /course/cs4500f14/bin/wav --combine m.wav MMW.wav b.wav m.wav mMbm.wav
+% /course/cs4500f14/bin/wav --combine MMW.wav p.wav m.wav m.wav Mpmm.wav
+% /course/cs4500f14/bin/wav --combine m.wav m.wav s.wav m.wav mmsm.wav
+% /course/cs4500f14/bin/wav --combine MMW.wav MMW.wav w.wav MMw.wav
