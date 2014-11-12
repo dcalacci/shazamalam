@@ -90,24 +90,41 @@ def is_match(f1, f2):
 
     Wow, code reuse. Remind yourself to kick dan.
     Not very :herb:
-    TODO: incorporate time differences
+
+    TODO: WHY IS THIS SO SLOW
+
     """
     mono1, mono2 = read_audio.get_mono(f1), read_audio.get_mono(f2)
-    fingerprints = [fingerprinting.get_fingerprints(m) for m in (mono1, mono2)]
+    prints1, prints2 = [dict(fingerprinting.get_fingerprints(m))
+                        for m in (mono1, mono2)]
+    shared_hashes = set(prints1.keys()).intersection(set(prints2.keys()))
 
-    # {offset_diff -> {fingerprint -> count}}
+    # {offset_diff -> [(md5, offset1, offset2), ...]}
+    offset_dict = defaultdict(list)
     match_counter = defaultdict(int)
+
     max_count = 0
-    for print1, offset1 in fingerprints[0]:
-        for print2, offset2 in fingerprints[1]:
-            if print1 == print2:
-                offset_diff = abs(offset1 - offset2)
-                match_counter[offset_diff] += 1
-                count = match_counter[offset_diff]
-                if count > max_count:
-                    max_count = count
+    offset_difference = 0
+
+    for h in shared_hashes:
+        offset1, offset2 = prints1[h], prints2[h]
+        offset_diff = abs(offset1 - offset2)
+        offset_dict[offset_diff].append((h, offset1, offset2))
+        match_counter[offset_diff] += 1
+        count = match_counter[offset_diff]
+        if count > max_count:
+            max_count = count
+            offset_difference = offset_diff
+
     if max_count > MATCH_THRESHOLD:
-        return True
+        hashes = match_counter[offset_difference]
+        start1 = min(hashes, key=lambda t: t[1])[1]
+        start2 = min(hashes, key=lambda t: t[2])[2]
+
+        return (start1, start2)
+
+    else:
+        return False
 
 
 def final_print(audio_1_path, audio_2_path):

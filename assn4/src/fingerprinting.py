@@ -8,9 +8,9 @@ from scipy.ndimage.morphology import (generate_binary_structure,
 import hashlib
 
 
-WINDOW_SIZE = 4096  # granularity of chunks
+WINDOW_SIZE = 2048  # granularity of chunks
 SAMPLE_RATE = 44100  # we resample to this
-OVERLAP_RATIO = 0.5  # amount our chunks can overlap
+OVERLAP_RATIO = 0.9  # amount our chunks can overlap
 AMPLITUDE_THRESHOLD = 40  # the minimum amplitude to keep for a peak
 FINGERPRINT_PAIR_DISTANCE = 19  # the farthest a pair can be apart
 FINGERPRINT_TIME_DELTA = 10  # the farthest a pair can be apart in time
@@ -94,6 +94,7 @@ def get_peaks(spectrogram, plot=False):
 
 
 def hash_peaks(filtered_peaks):
+    # time, frequency, amplitude
     sorted_peaks = sorted(filtered_peaks, key=lambda p: p[0])
     # of the form (f1, f2, time_delta)
     fingerprints = []
@@ -111,5 +112,6 @@ def hash_peaks(filtered_peaks):
             h = hashlib.md5('{0}|{1}|{2}'.format(fprint[0],
                                                  fprint[1],
                                                  fprint[2]))
-            fingerprints.append((h.hexdigest(), i))
+            #fingerprints.append((h.hexdigest(), i))
+            fingerprints.append((h.hexdigest(), p[0]))
     return fingerprints
