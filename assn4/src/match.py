@@ -1,6 +1,8 @@
 from collections import defaultdict
 from os.path import basename
-from datastore import *
+import datastore
+import fingerprinting
+import read_audio
 
 
 # threshold for number of matching fingerprints in a given time offset
@@ -13,7 +15,7 @@ def get_matches_for_hashes(hashes):
     Returns a list of (song_id, offset_diff) for each match.
     """
     # list of (md5, offset, song_id)
-    fprints = get_fingerprints()
+    fprints = datastore.get_fingerprints()
 
     # creates a dict of md5 -> (offset, song_id)
     stored_hashes = {t[0]: map(int, t[1:]) for t in fprints}
@@ -30,31 +32,51 @@ def get_matches_for_hashes(hashes):
     # create a dictionary of our query song offsets from the hashes
     query_offsets = dict(hashes)
 
-    # returns a list of (song_id, offset_diff)
-    # we compute the difference between the offset of this match in
-    # our database and the offset of the given sample.
+    # returns a list of (song_id, offset_diff, offset, query_offset)
 
-    for h, offset, song_id in matches:
-        yield(song_id, offset - query_offsets[h])
+    # offset_diff is the difference between the offset of the
+    # fingerprint in the sample we've been given and the offset of the
+    # corresponding fingerprint in the file in the datastore.
+
+    res = []
+    for h, db_offset, db_song_id in matches:
+        offset_diff = db_offset - query_offsets[h]
+        res.append((db_song_id, offset_diff, db_offset, query_offsets[h]))
+    return res
 
 
-def get_matches(hash_tuples):
-    """list of (MD5, offset) -> list of (songid, offset_dif)
+def get_match(hash_tuples):
+    """hash_tuples is a list of (MD5, offset) -> list of (songid, offset_dif)
     Assumes that what you're matching against is already in the datastore.
     """
-    most_likely_song = (None, 0)
+    most_likely_match = (None, 0, 0)
     # {offset_diff: {song_id: #collisions} ...}
     match_counter = defaultdict(lambda: defaultdict(int))
     # (song_id, offset_diff)
     matches = get_matches_for_hashes(hash_tuples)
-    for song_id, offset_diff in matches:
+    for song_id, offset_diff, db_offset, query_offset in matches:
         match_counter[offset_diff][song_id] += 1
         # update the most likely song if the highest count changes.
         count = match_counter[offset_diff][song_id]
-        if count > most_likely_song[1]:
-            most_likely_song = (song_id, count)
-    # return the most likely song's ID
-    return most_likely_song[0]
+        if count > most_likely_match[1]:
+            most_likely_match = (song_id, count, offset_diff)
+
+    # the start time in the db is the earliest offset.
+    # the start time in the query is that - the offset difference.
+
+    # and the end time should be the fingerprint with the same offset_diff
+    # that has the largest sum of (offset + time_delta):
+    song_id = most_likely_match[0]
+    offset_diff = most_likely_match[2]
+
+    hashes = [match for match in matches
+              if match[0] == song_id and match[1] == offset_diff]
+    db_start = min(hashes, key=lambda t: t[2])[2]
+    query_start = db_start - offset_diff
+
+    # return the most likely song's ID and the start and end times:
+    song_name = datastore.get_song_file_from_id(most_likely_match[0])
+    return (song_name, query_start, db_start)
 
 
 def is_match(f1, f2):
@@ -68,6 +90,7 @@ def is_match(f1, f2):
 
     Wow, code reuse. Remind yourself to kick dan.
     Not very :herb:
+    TODO: incorporate time differences
     """
     mono1, mono2 = read_audio.get_mono(f1), read_audio.get_mono(f2)
     fingerprints = [fingerprinting.get_fingerprints(m) for m in (mono1, mono2)]

@@ -9,7 +9,7 @@ import hashlib
 
 
 WINDOW_SIZE = 4096  # granularity of chunks
-SAMPLE_RATE = 5512  # we resample to this
+SAMPLE_RATE = 44100  # we resample to this
 OVERLAP_RATIO = 0.5  # amount our chunks can overlap
 AMPLITUDE_THRESHOLD = 40  # the minimum amplitude to keep for a peak
 FINGERPRINT_PAIR_DISTANCE = 19  # the farthest a pair can be apart
