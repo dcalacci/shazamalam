@@ -1,29 +1,43 @@
 #!/usr/bin/env python
 from scipy.io import wavfile
+from scipy.signal import resample
+from os.path import basename
 import numpy as np
 import wave
 import os
 import sys
 import subprocess
 
+LAME_CMD = ['/usr/bin/env', 'lame']
+#LAME_CMD = ['/course/cs4500f14/bin/lame']
+
+RESAMPLE_RATE = 44100
+
 
 def get_mono(fpath):
-    """ Converts the given wav file to 44100 PCM Mono.
+    """ Converts the given wav file to 5512 PCM Mono.
     """
     if is_mp3(fpath):
         fpath = create_temp_wav_file(fpath)
     samplerate, channels = wavfile.read(fpath)
 
-    # if it's mono
+    # if the sample rate isn't already 5512, resample the file
+    if samplerate != RESAMPLE_RATE:
+        channels = resample_pcm(samplerate, channels)
+
+    # if it's mono, don't average them
     if type(channels[0]) != np.ndarray:
         return channels
 
-    if samplerate != 44100:
-        raise Exception("File at " + fpath + " isn't 44100 sample rate, breaking...")
+    return np.mean(channels, axis=1).astype(int)
 
-    # TODO: Handle mono files correctly.
 
-    return np.mean(channels, axis=1)
+def resample_pcm(samplerate, channels, resample_rate=RESAMPLE_RATE):
+    """Resamples the given PCM stream to resample_rate.
+    """
+    new_length = resample_rate * (len(channels) / samplerate)
+    # convert to int so we have more exact matches
+    return resample(channels, new_length).astype(int)
 
 
 # gets tuple of ("-f|-d", [path]) and determines if it's a dir
@@ -122,40 +136,23 @@ def validate_input(audio_input):
     return False
 
 
-def length(wave_file):
-    wr = wave.open(wave_file, "rb")
-    sample_rate = wr.getframerate()
-    num_frames = wr.getnframes()
-    wr.close()
-
-    return num_frames / float(sample_rate)
-
-
 def create_temp_wav_file(file_path):
     """Creates a temporary wav file from the given mp3 file.
 
     Returns the full path of the temporary wav file.
     """
-    path_array = file_path.split('/')
-    filename = path_array[-1]
-    new_wav_file_path = '/tmp/' + filename.split('.')[0] + '.wav'
+    new_wav_file_path = '/tmp/' + basename(file_path).split('.')[0] + '.wav'
     # test if user has lame in system, do subprocess call
     # output to /dev/null
     FNULL = open(os.devnull, 'w')
-    res = subprocess.call(['/usr/bin/env', 'lame'],
-                          stdout=FNULL,
-                          stderr=subprocess.STDOUT)
-    if res == 1:
-        lame_cmd = ['/usr/bin/env', 'lame']
-    else:
-        lame_cmd = ['/course/cs4500f14/bin/lame']
     args = ['-V2', '--silent', '--decode', file_path, new_wav_file_path]
-    res = subprocess.call(lame_cmd + args,
+    res = subprocess.call(LAME_CMD + args,
                           stdout=FNULL,
                           stderr=subprocess.STDOUT)
 
     if res != 0:
-        raise Exception("Call to lame failed. It's either not installed or it failed the conversion.")
+        raise Exception("Call to lame failed. It's either not \
+        installed or it failed the conversion.")
 
     return new_wav_file_path
 
