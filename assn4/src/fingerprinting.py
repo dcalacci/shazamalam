@@ -119,6 +119,20 @@ def hash_peaks(filtered_peaks, times):
                                                  fprint[2]))
 
             peak_offset = peak[0]
-            fingerprints.append((h.hexdigest(), peak_offset,
-                                 times[peak_offset]))
+
+            # one (admittedly very small) problem with our times being
+            # off is the time is the CENTER of the bin. we always want
+            # to return the earlist point in the bin. This calculation
+            # fixes that by subtracting half a bin length from our
+            # time calculation.
+            peak_bin_time = times[peak_offset]
+            try:  # we might be at the end
+                next_bin_time = times[peak_offset + 1]
+            except:
+                next_bin_time = times[peak_offset - 1]
+
+            half_bin_length = (next_bin_time - peak_bin_time) / 2.0
+            peak_bin_time = peak_bin_time - half_bin_length
+
+            fingerprints.append((h.hexdigest(), peak_offset, peak_bin_time))
     return fingerprints

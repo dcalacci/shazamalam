@@ -14,6 +14,7 @@ LAME_CMD = ['/usr/bin/env', 'lame']
 RESAMPLE_RATE = 44100
 
 
+
 def get_mono(fpath):
     """ Converts the given wav file to 5512 PCM Mono.
     """
