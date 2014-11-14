@@ -111,12 +111,12 @@ def validate_file(file_input):
         wave.open(file_input, 'rb')
         return True
     except IOError:
-        print "ERROR: file ", short_name, " does not exist"
+        print "ERROR file ", short_name, " does not exist"
     except wave.Error:
         if is_mp3(file_input):
             return True
 
-        print "ERROR: file ", short_name, " is not a supported format"
+        print "ERROR file ", short_name, " is not a supported format"
     return False
 
 
@@ -132,7 +132,7 @@ def validate_input(audio_input):
         else:
             return validate_file(path)
     except OSError:
-        print "ERROR: directory ", short_name, " does not exist"
+        print "ERROR directory ", short_name, " does not exist"
     return False
 
 

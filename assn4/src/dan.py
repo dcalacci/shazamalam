@@ -37,11 +37,11 @@ def parse_args(argv):
 
 	  #check number of options
 	  if(len(option_value_hash) < 2):
-	  	print 'ERROR: incorrect command line'
+	  	print 'ERROR incorrect command line'
 	  	sys.exit(2)
 
 	except getopt.GetoptError:
-	  print 'ERROR: incorrect command line'
+	  print 'ERROR incorrect command line'
 	  sys.exit(2)
 
 	#should we be given valid arguments, lets take a look
