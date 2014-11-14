@@ -21,7 +21,7 @@ def get_mono(fpath):
         fpath = create_temp_wav_file(fpath)
     samplerate, channels = wavfile.read(fpath)
 
-    # if the sample rate isn't already 5512, resample the file
+    # if the sample rate isn't already 44100, resample the file
     if samplerate != RESAMPLE_RATE:
         channels = resample_pcm(samplerate, channels)
 

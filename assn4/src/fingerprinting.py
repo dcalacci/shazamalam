@@ -13,38 +13,37 @@ SAMPLE_RATE = 44100  # we resample to this
 OVERLAP_RATIO = 0.5  # amount our chunks can overlap
 AMPLITUDE_THRESHOLD = 40  # the minimum amplitude to keep for a peak
 FINGERPRINT_PAIR_DISTANCE = 19  # the farthest a pair can be apart
-FINGERPRINT_TIME_DELTA = 10  # the farthest a pair can be apart in time
+FINGERPRINT_TIME_DELTA = 40  # the farthest a pair can be apart in time
+NEIGHBORHOOD_SIZE = 5  # size of neighborhood for peak finding
 
 
 def get_fingerprints(samples, plot=[False, False]):
     """Give it a mono stream, yo
     """
-    spectrogram, times = get_spectrogram_data(samples, plot=plot[0])
-
+    spectrogram, time = get_spectrogram(samples, plot=plot[0])
     # get peaks
     peaks = get_peaks(spectrogram, plot=plot[1])
     # hash them!
-    fingerprints = hash_peaks(peaks, times)
+    fingerprints = hash_peaks(peaks, time)
 
     return fingerprints
 
 
-def get_spectrogram_data(samples, plot=False):
+def get_spectrogram(samples, plot=False):
     """Computes the spectrogram for the samples given.
     """
     if plot:
         f = plt
     else:
         f = mlab
+    res = f.specgram(samples,
+                     NFFT=WINDOW_SIZE,
+                     Fs=SAMPLE_RATE,
+                     window=mlab.window_hanning,
+                     noverlap=int(WINDOW_SIZE * OVERLAP_RATIO))
 
-    spectrogram_data = f.specgram(samples,
-                             NFFT=WINDOW_SIZE,
-                             Fs=SAMPLE_RATE,
-                             window=mlab.window_hanning,
-                             noverlap=int(WINDOW_SIZE * OVERLAP_RATIO))
-
-    spectrogram = spectrogram_data[0]
-    times = spectrogram_data[2]
+    # pull out the components
+    spectrogram, frequencies, time = res
 
     # log the result
     spectrogram = 10 * np.log10(spectrogram)
@@ -52,7 +51,7 @@ def get_spectrogram_data(samples, plot=False):
     # np.inf is terrible, replace with zeros.
     spectrogram[spectrogram == -np.inf] = 0
 
-    return spectrogram, times
+    return spectrogram, time
 
 
 def get_peaks(spectrogram, plot=False):
@@ -60,7 +59,7 @@ def get_peaks(spectrogram, plot=False):
     """
     # generate the filter pattern (neighborhoods)
     peak_filter = generate_binary_structure(2, 1)
-    neighborhood = iterate_structure(peak_filter, 20).astype(int)
+    neighborhood = iterate_structure(peak_filter, NEIGHBORHOOD_SIZE).astype(int)
 
     # set each point equal to the maximum in it's neighborhood
     local_max = maximum_filter(spectrogram, footprint=neighborhood)
@@ -118,6 +117,8 @@ def hash_peaks(filtered_peaks, times):
             h = hashlib.md5('{0}|{1}|{2}'.format(fprint[0],
                                                  fprint[1],
                                                  fprint[2]))
-            #fingerprints.append((h.hexdigest(), i))
-            fingerprints.append((h.hexdigest(), p[0], times[p[0]]))
+
+            peak_offset = peak[0]
+            fingerprints.append((h.hexdigest(), peak_offset,
+                                 times[peak_offset]))
     return fingerprints
