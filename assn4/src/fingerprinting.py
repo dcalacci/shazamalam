@@ -10,10 +10,11 @@ import hashlib
 
 WINDOW_SIZE = 2048  # granularity of chunks
 SAMPLE_RATE = 44100  # we resample to this
-OVERLAP_RATIO = 0.9  # amount our chunks can overlap
+OVERLAP_RATIO = 0.5  # amount our chunks can overlap
 AMPLITUDE_THRESHOLD = 40  # the minimum amplitude to keep for a peak
 FINGERPRINT_PAIR_DISTANCE = 19  # the farthest a pair can be apart
-FINGERPRINT_TIME_DELTA = 10  # the farthest a pair can be apart in time
+FINGERPRINT_TIME_DELTA = 40  # the farthest a pair can be apart in time
+NEIGHBORHOOD_SIZE = 5  # size of neighborhood for peak finding
 
 
 def get_fingerprints(samples, plot=[False, False]):
@@ -54,7 +55,7 @@ def get_peaks(spectrogram, plot=False):
     """
     # generate the filter pattern (neighborhoods)
     peak_filter = generate_binary_structure(2, 1)
-    neighborhood = iterate_structure(peak_filter, 20).astype(int)
+    neighborhood = iterate_structure(peak_filter, NEIGHBORHOOD_SIZE).astype(int)
 
     # set each point equal to the maximum in it's neighborhood
     local_max = maximum_filter(spectrogram, footprint=neighborhood)
@@ -112,6 +113,6 @@ def hash_peaks(filtered_peaks):
             h = hashlib.md5('{0}|{1}|{2}'.format(fprint[0],
                                                  fprint[1],
                                                  fprint[2]))
-            #fingerprints.append((h.hexdigest(), i))
-            fingerprints.append((h.hexdigest(), p[0]))
+
+            fingerprints.append((h.hexdigest(), peak[0]))
     return fingerprints
