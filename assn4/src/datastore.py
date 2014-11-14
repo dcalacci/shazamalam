@@ -45,8 +45,9 @@ def save_fingerprints(fprints, song_id):
     MD5|OFFSET|SONG_ID
     """
     with open(FINGERPRINT_FILE, 'a') as outfile:
-        for md5, offset in fprints:
-            outfile.write("{0}|{1}|{2}\n".format(md5, offset, song_id))
+        for md5, offset, time in fprints:
+            outfile.write("{0}|{1}|{2}|{3}\n".format(md5, offset,
+                                                     song_id, time))
 
 
 def add_fingerprints(fpath):

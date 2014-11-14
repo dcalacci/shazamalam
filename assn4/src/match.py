@@ -11,14 +11,15 @@ MATCH_THRESHOLD = 5
 
 
 def get_matches_for_hashes(hashes):
-    """ hashes are a list of (md5, offset)
+    """ hashes are a list of (md5, offset, time)
     Returns a list of (song_id, offset_diff) for each match.
     """
-    # list of (md5, offset, song_id)
+    # list of (md5, offset, song_id, time)
     fprints = datastore.get_fingerprints()
 
-    # creates a dict of md5 -> (offset, song_id)
-    stored_hashes = {t[0]: map(int, t[1:]) for t in fprints}
+    # creates a dict of md5 -> (offset, song_id, time)
+    stored_hashes = {t[0]: (int(t[1]), int(t[2]), float(t[3]))
+                     for t in fprints}
 
     # get all tuples that match our hashes.
     # matches will contain a list of tuples of the form:
@@ -26,11 +27,12 @@ def get_matches_for_hashes(hashes):
     matches = []
     for h in hashes:
         if h[0] in stored_hashes:
-            db_offset, db_song_id = stored_hashes.get(h[0])
-            matches.append((h[0], db_offset, db_song_id))
+            db_offset, db_song_id, time = stored_hashes.get(h[0])
+            matches.append((h[0], db_offset, db_song_id, time))
 
     # create a dictionary of our query song offsets from the hashes
-    query_offsets = dict(hashes)
+    # {hash: offset}
+    query_offsets = {t[0]: t[1:] for t in hashes}
 
     # returns a list of (song_id, offset_diff, offset, query_offset)
 
@@ -39,9 +41,11 @@ def get_matches_for_hashes(hashes):
     # corresponding fingerprint in the file in the datastore.
 
     res = []
-    for h, db_offset, db_song_id in matches:
-        offset_diff = db_offset - query_offsets[h]
-        res.append((db_song_id, offset_diff, db_offset, query_offsets[h]))
+    for h, db_offset, db_song_id, db_time in matches:
+        query_offset = query_offsets[h][0]
+        query_time = query_offsets[h][1]
+        offset_diff = db_offset - query_offset
+        res.append((db_song_id, offset_diff, db_offset, query_time, db_time))
     return res
 
 
@@ -54,7 +58,8 @@ def get_match(hash_tuples):
     match_counter = defaultdict(lambda: defaultdict(int))
     # (song_id, offset_diff)
     matches = get_matches_for_hashes(hash_tuples)
-    for song_id, offset_diff, db_offset, query_offset in matches:
+    for tup in matches:
+        song_id, offset_diff = tup[:2]
         match_counter[offset_diff][song_id] += 1
         # update the most likely song if the highest count changes.
         count = match_counter[offset_diff][song_id]
@@ -69,14 +74,21 @@ def get_match(hash_tuples):
     song_id = most_likely_match[0]
     offset_diff = most_likely_match[2]
 
+    # pick out hashes for which we have the right song id and the
+    # right offset difference
     hashes = [match for match in matches
               if match[0] == song_id and match[1] == offset_diff]
-    db_start = min(hashes, key=lambda t: t[2])[2]
-    query_start = db_start - offset_diff
+
+    # find minimum by offset
+    start_peak = min(hashes, key=lambda t: t[2])
+    query_start_time = start_peak[3]
+    db_start_time = start_peak[4]
+
 
     # return the most likely song's ID and the start and end times:
     song_name = datastore.get_song_file_from_id(most_likely_match[0])
-    return (song_name, query_start, db_start)
+    #return (song_name, query_start, db_start)
+    return (song_name, query_start_time, db_start_time)
 
 
 def is_match(f1, f2):

@@ -20,11 +20,11 @@ NEIGHBORHOOD_SIZE = 5  # size of neighborhood for peak finding
 def get_fingerprints(samples, plot=[False, False]):
     """Give it a mono stream, yo
     """
-    spectrogram = get_spectrogram(samples, plot=plot[0])
+    spectrogram, time = get_spectrogram(samples, plot=plot[0])
     # get peaks
     peaks = get_peaks(spectrogram, plot=plot[1])
     # hash them!
-    fingerprints = hash_peaks(peaks)
+    fingerprints = hash_peaks(peaks, time)
 
     return fingerprints
 
@@ -36,18 +36,22 @@ def get_spectrogram(samples, plot=False):
         f = plt
     else:
         f = mlab
-    spectrogram = f.specgram(samples,
-                             NFFT=WINDOW_SIZE,
-                             Fs=SAMPLE_RATE,
-                             window=mlab.window_hanning,
-                             noverlap=int(WINDOW_SIZE * OVERLAP_RATIO))[0]
+    res = f.specgram(samples,
+                     NFFT=WINDOW_SIZE,
+                     Fs=SAMPLE_RATE,
+                     window=mlab.window_hanning,
+                     noverlap=int(WINDOW_SIZE * OVERLAP_RATIO))
+
+    # pull out the components
+    spectrogram, frequencies, time = res
+
     # log the result
     spectrogram = 10 * np.log10(spectrogram)
 
     # np.inf is terrible, replace with zeros.
     spectrogram[spectrogram == -np.inf] = 0
 
-    return spectrogram
+    return spectrogram, time
 
 
 def get_peaks(spectrogram, plot=False):
@@ -94,7 +98,7 @@ def get_peaks(spectrogram, plot=False):
     return filtered_peaks
 
 
-def hash_peaks(filtered_peaks):
+def hash_peaks(filtered_peaks, times):
     # time, frequency, amplitude
     sorted_peaks = sorted(filtered_peaks, key=lambda p: p[0])
     # of the form (f1, f2, time_delta)
@@ -114,5 +118,7 @@ def hash_peaks(filtered_peaks):
                                                  fprint[1],
                                                  fprint[2]))
 
-            fingerprints.append((h.hexdigest(), peak[0]))
+            peak_offset = peak[0]
+            fingerprints.append((h.hexdigest(), peak_offset,
+                                 times[peak_offset]))
     return fingerprints
