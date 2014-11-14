@@ -82,10 +82,18 @@ def get_match(hash_tuples, dstore):
         query_start_time = start_peak[3]
         db_start_time = start_peak[4]
 
+        end_peak = max(hashes, key=lambda t: t[2])
+        query_end_time = end_peak[3]
+        db_end_time = end_peak[4]
+
+        query_duration = query_end_time - query_start_time
+        db_duration = db_end_time - db_start_time
+
         # return the most likely song's ID and the start and end times:
         song_name = dstore.get_song_file_from_id(song_id)
 
-        matches_to_return.append((song_name, query_start_time, db_start_time))
+        if query_duration > 5 and db_duration > 5:
+            matches_to_return.append((song_name, query_start_time, db_start_time))
     return matches_to_return
 
 
