@@ -4,6 +4,8 @@ import read_audio
 import getopt
 import sys
 import match
+import datastore
+import fingerprinting
 
 """
 This is the main executable file we'll run for assn4.
@@ -76,14 +78,23 @@ def main(argv):
 	#parse the audio files from the arguments
 	true_audio, suspect_audio = parse_args(argv)
 
-        #validate that these audio files are legit
-        if (not (read_audio.validate_input(true_audio) and read_audio.validate_input(suspect_audio))):
-            sys.exit(2)
+	#validate that these audio files are legit
+	if (not (read_audio.validate_input(true_audio) and read_audio.validate_input(suspect_audio))):
+		sys.exit(2)
 
-        true_audio = read_audio.create_file_array(true_audio)
-        suspect_audio = read_audio.create_file_array(suspect_audio)
+	dstore = datastore.Datastore()
 
-        result = match.match_files(true_audio, suspect_audio)
+	true_audio = read_audio.create_file_array(true_audio)
+	suspect_audio = read_audio.create_file_array(suspect_audio)
+
+	for suspect_audio_path in suspect_audio:
+		dstore.add_fingerprints(suspect_audio_path)
+
+	for true_audio_path in true_audio:
+		samples = read_audio.get_mono(true_audio_path)
+		hashes = fingerprinting.get_fingerprints(samples)
+		match_data = match.get_match(hashes, dstore)
+		match.print_match(true_audio_path, match_data)
 
 #run maine (1: lops off the leading reference)
 main(sys.argv[1:])

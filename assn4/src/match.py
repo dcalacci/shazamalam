@@ -51,7 +51,6 @@ def get_match(hash_tuples, dstore):
     """
     # (db_song_id, offset_diff, db_offset, query_time, db_time)
     matches = get_matches_for_hashes(hash_tuples, dstore)
-
     # make a dict of {song_name: {offset_diff: #collisions}}
     # then, we can iterate through the dict and choose songs that
     # have more than MATCH_THRESHOLD matches for some offset.
@@ -92,8 +91,8 @@ def get_match(hash_tuples, dstore):
         # return the most likely song's ID and the start and end times:
         song_name = dstore.get_song_file_from_id(song_id)
 
-        if query_duration > 5 and db_duration > 5:
-            matches_to_return.append((song_name, query_start_time, db_start_time))
+        #if query_duration > 5 and db_duration > 5:
+        matches_to_return.append((song_name, query_start_time, db_start_time))
     return matches_to_return
 
 
@@ -144,13 +143,16 @@ def is_match(f1, f2):
     else:
         return False
 
-
-def final_print(audio_1_path, audio_2_path):
+def print_match(audio_1_path, match_data):
     """Prints matches according to black-box spec
     """
-    print "MATCH: ", basename(audio_1_path), " ", basename(audio_2_path)
 
+    for match in match_data:
+        audio_2_path = match[0]
+        time_1 = match[1]
+        time_2 = match[2]
 
+        print "MATCH ", basename(audio_1_path).lstrip(), " ", basename(audio_2_path).lstrip(), " ", time_1, " ", time_2
 
 # """
 # is_match:
