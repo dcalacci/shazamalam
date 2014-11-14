@@ -18,7 +18,7 @@ def get_matches_for_hashes(hashes):
     fprints = datastore.get_fingerprints()
 
     # creates a dict of md5 -> (offset, song_id)
-    stored_hashes = {t[0]: map(int, t[1:]) for t in fprints}
+    stored_hashes = {t[0]: (int(t[1]), int(t[2]), t[3]) for t in fprints}
 
     # get all tuples that match our hashes.
     # matches will contain a list of tuples of the form:
@@ -26,11 +26,11 @@ def get_matches_for_hashes(hashes):
     matches = []
     for h in hashes:
         if h[0] in stored_hashes:
-            db_offset, db_song_id = stored_hashes.get(h[0])
-            matches.append((h[0], db_offset, db_song_id))
+            db_offset, db_song_id, db_offset_time = stored_hashes.get(h[0])
+            matches.append((h[0], db_offset, db_song_id, db_offset_time))
 
     # create a dictionary of our query song offsets from the hashes
-    query_offsets = dict(hashes)
+    query_offsets = {t[0]:t[2] for t in hashes}
 
     # returns a list of (song_id, offset_diff, offset, query_offset)
 
@@ -39,9 +39,9 @@ def get_matches_for_hashes(hashes):
     # corresponding fingerprint in the file in the datastore.
 
     res = []
-    for h, db_offset, db_song_id in matches:
+    for h, db_offset, db_song_id, db_offset_time in matches:
         offset_diff = db_offset - query_offsets[h]
-        res.append((db_song_id, offset_diff, db_offset, query_offsets[h]))
+        res.append((db_song_id, offset_diff, db_offset, query_offsets[h], db_offset_time))
     return res
 
 
@@ -54,12 +54,12 @@ def get_match(hash_tuples):
     match_counter = defaultdict(lambda: defaultdict(int))
     # (song_id, offset_diff)
     matches = get_matches_for_hashes(hash_tuples)
-    for song_id, offset_diff, db_offset, query_offset in matches:
+    for song_id, offset_diff, db_offset, query_offset, db_offset_time in matches:
         match_counter[offset_diff][song_id] += 1
         # update the most likely song if the highest count changes.
         count = match_counter[offset_diff][song_id]
         if count > most_likely_match[1]:
-            most_likely_match = (song_id, count, offset_diff)
+            most_likely_match = (song_id, count, offset_diff, query_offset, db_offset_time)
 
     # the start time in the db is the earliest offset.
     # the start time in the query is that - the offset difference.
@@ -71,13 +71,25 @@ def get_match(hash_tuples):
 
     hashes = [match for match in matches
               if match[0] == song_id and match[1] == offset_diff]
-    db_start = min(hashes, key=lambda t: t[2])[2]
-    query_start = db_start - offset_diff
 
-    # return the most likely song's ID and the start and end times:
-    song_name = datastore.get_song_file_from_id(most_likely_match[0])
-    return (song_name, query_start, db_start)
+    if len(hashes) > 0:
+        query_start = hashes[0][3]
+        db_start = hashes[0][4]
 
+        for match in hashes:
+            if match[3] < query_start:
+                query_start = match[3]
+            if match[4] < db_start:
+                db_start = match[4]
+
+        # return the most likely song's ID and the start and end times:
+        song_name = datastore.get_song_file_from_id(most_likely_match[0])
+        return (song_name, query_start, db_start)
+
+def match_song_to_db(fpath):
+    samples = read_audio.get_mono(fpath)
+    fingerprints = fingerprinting.get_fingerprints(samples)
+    return get_match(fingerprints)
 
 def is_match(f1, f2):
     """Returns True if f1 matches to f2.
@@ -131,7 +143,6 @@ def final_print(audio_1_path, audio_2_path):
     """Prints matches according to black-box spec
     """
     print "MATCH: ", basename(audio_1_path), " ", basename(audio_2_path)
-
 
 
 # """

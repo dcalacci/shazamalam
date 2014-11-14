@@ -4,6 +4,7 @@ import read_audio
 import getopt
 import sys
 import match
+import datastore
 
 """
 This is the main executable file we'll run for assn4.
@@ -76,14 +77,27 @@ def main(argv):
 	#parse the audio files from the arguments
 	true_audio, suspect_audio = parse_args(argv)
 
-        #validate that these audio files are legit
-        if (not (read_audio.validate_input(true_audio) and read_audio.validate_input(suspect_audio))):
-            sys.exit(2)
+	#validate that these audio files are legit
+	if (not (read_audio.validate_input(true_audio) and read_audio.validate_input(suspect_audio))):
+		sys.exit(2)
 
-        true_audio = read_audio.create_file_array(true_audio)
-        suspect_audio = read_audio.create_file_array(suspect_audio)
+	true_audio = read_audio.create_file_array(true_audio)
+	suspect_audio = read_audio.create_file_array(suspect_audio)
 
-        result = match.match_files(true_audio, suspect_audio)
+	#delete current tmp files if they exist
+	read_audio.delete_temp_file('/tmp/fingerprints.txt')
+	read_audio.delete_temp_file('/tmp/songs.txt')
+
+	for audio_path in true_audio:
+		datastore.add_fingerprints(audio_path)
+
+	matches = []
+	for audio_path in suspect_audio:
+		match_data = match.match_song_to_db(audio_path)
+		if match_data:
+			matches.append((audio_path, match_data))
+
+	print matches
 
 #run maine (1: lops off the leading reference)
 main(sys.argv[1:])
