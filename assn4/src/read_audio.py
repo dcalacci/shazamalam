@@ -96,7 +96,6 @@ def create_file_array(audio_input):
             if (validate_file(full_filename)):
                 file_array.append(full_filename)
             else:
-                print "Program terminating..."
                 sys.exit(2)
         return file_array
     else:
