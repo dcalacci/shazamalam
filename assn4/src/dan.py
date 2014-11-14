@@ -32,7 +32,8 @@ def parse_args(argv):
 	#get the audio arguments and options
 	try:
 	  option_value_hash, command_line_args = getopt.getopt(argv,"f:d:")
-	  #not using command_line_args, arguments in options_value_hash (-option => argument)
+	  # not using command_line_args, arguments in 
+	  # options_value_hash (-option => argument)
 
 	  #check number of options
 	  if(len(option_value_hash) < 2):
@@ -64,8 +65,10 @@ def parse_args(argv):
 main:
 lets grab those input files shall we?
 
-INPUT: Command line arguments without the leading reference
-OUTPUT: Results of dan's main functionality a.k.a. commparing two audio files
+INPUT: Command line arguments without the 
+	   leading reference
+OUTPUT: Results of dan's main functionality 
+		a.k.a. commparing two audio files
 """
 def main(argv):
 
@@ -78,7 +81,8 @@ def main(argv):
 	true_audio, suspect_audio = parse_args(argv)
 
 	#validate that these audio files are legit
-	if (not (read_audio.validate_input(true_audio) and read_audio.validate_input(suspect_audio))):
+	if (not (read_audio.validate_input(true_audio) 
+		and read_audio.validate_input(suspect_audio))):
 		sys.exit(2)
 
 	true_audio = read_audio.create_file_array(true_audio)
