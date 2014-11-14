@@ -6,6 +6,7 @@ from scipy.ndimage.morphology import (generate_binary_structure,
                                       iterate_structure,
                                       binary_erosion)
 import hashlib
+import warnings
 
 
 WINDOW_SIZE = 2048  # granularity of chunks
@@ -44,6 +45,8 @@ def get_spectrogram(samples, plot=False):
 
     # pull out the components
     spectrogram, frequencies, time = res
+
+    warnings.simplefilter("ignore")
 
     # log the result
     spectrogram = 10 * np.log10(spectrogram)
