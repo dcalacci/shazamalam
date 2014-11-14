@@ -59,7 +59,8 @@ def get_peaks(spectrogram, plot=False):
     """
     # generate the filter pattern (neighborhoods)
     peak_filter = generate_binary_structure(2, 1)
-    neighborhood = iterate_structure(peak_filter, NEIGHBORHOOD_SIZE).astype(int)
+    neighborhood = iterate_structure(peak_filter,
+                                     NEIGHBORHOOD_SIZE).astype(int)
 
     # set each point equal to the maximum in it's neighborhood
     local_max = maximum_filter(spectrogram, footprint=neighborhood)

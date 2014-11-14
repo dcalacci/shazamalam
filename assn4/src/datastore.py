@@ -1,6 +1,5 @@
 import fingerprinting
 import read_audio
-import os
 from collections import defaultdict
 
 SONG_ID_FILE = "/tmp/songs.txt"
