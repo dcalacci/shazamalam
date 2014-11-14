@@ -2,6 +2,7 @@ from collections import defaultdict
 from os.path import basename
 import fingerprinting
 import read_audio
+import datastore
 
 
 # threshold for number of matching fingerprints in a given time offset
@@ -91,10 +92,29 @@ def get_match(hash_tuples, dstore):
         # return the most likely song's ID and the start and end times:
         song_name = dstore.get_song_file_from_id(song_id)
 
-        #if query_duration > 5 and db_duration > 5:
-        matches_to_return.append((song_name, query_start_time, db_start_time))
+        if query_duration > 5 and db_duration > 5:
+            matches_to_return.append((song_name, query_start_time, db_start_time))
     return matches_to_return
 
+def match_2_files(fpath1, fpath2):
+    
+    dstore = datastore.Datastore()
+
+    #add first file
+    dstore.add_fingerprints(fpath1)
+
+    #match second file
+    samples = read_audio.get_mono(fpath2)
+    hashes = fingerprinting.get_fingerprints(samples)
+    match_data = get_match(hashes, dstore)
+
+    print match_data
+
+    if len(match_data) == 0:
+        return False
+    else:
+        match_data = match_data[0]
+        return (match_data[2], match_data[1])
 
 def is_match(f1, f2):
     """Returns True if f1 matches to f2.
