@@ -152,7 +152,8 @@ def print_match(audio_1_path, match_data):
         time_1 = match[1]
         time_2 = match[2]
 
-        print "MATCH ", basename(audio_1_path).lstrip(), " ", basename(audio_2_path).lstrip(), " ", time_1, " ", time_2
+        # python will automatically include spaces between comma-deliniated elements
+        print "MATCH", basename(audio_1_path).lstrip(), basename(audio_2_path).lstrip(), time_1, time_2
 
 # """
 # is_match:
