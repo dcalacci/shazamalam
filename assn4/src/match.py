@@ -41,7 +41,11 @@ def get_matches_for_hashes(hashes):
     res = []
     for h, db_offset, db_song_id, db_offset_time in matches:
         offset_diff = db_offset - query_offsets[h]
-        res.append((db_song_id, offset_diff, db_offset, query_offsets[h], db_offset_time))
+        res.append((db_song_id, 
+                    offset_diff, 
+                    db_offset, 
+                    query_offsets[h], 
+                    db_offset_time))
     return res
 
 
@@ -54,12 +58,20 @@ def get_match(hash_tuples):
     match_counter = defaultdict(lambda: defaultdict(int))
     # (song_id, offset_diff)
     matches = get_matches_for_hashes(hash_tuples)
-    for song_id, offset_diff, db_offset, query_offset, db_offset_time in matches:
+    for song_id, 
+        offset_diff, 
+        db_offset,
+        query_offset,
+        db_offset_time in matches:
         match_counter[offset_diff][song_id] += 1
         # update the most likely song if the highest count changes.
         count = match_counter[offset_diff][song_id]
         if count > most_likely_match[1]:
-            most_likely_match = (song_id, count, offset_diff, query_offset, db_offset_time)
+            most_likely_match = (song_id, 
+                                   count, 
+                                   offset_diff, 
+                                   query_offset, 
+                                   db_offset_time)
 
     # the start time in the db is the earliest offset.
     # the start time in the query is that - the offset difference.
