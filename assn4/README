@@ -1,8 +1,6 @@
 shazamalam
 ==========
 
-Current data: scp -r <username>@turtles.ccs.neu.edu:/course/cs4500f14/Assignments/A6 ./data/
-
 Team Members:
 - Dan Calacci	(calacci.d@husky.neu.edu)
 - Lucas Haber	(haber.l@husky.neu.edu)
@@ -19,7 +17,7 @@ command to create the executable:
 After that ./dan should be available from this
 directory as defined at:
 
-http://www.ccs.neu.edu/course/cs4500f14/assignment5.txt
+http://www.ccs.neu.edu/course/cs4500f14/assignment6.txt
 
 The only third party software used is the LAME
 encoder, the standard linux ‘file’ command and
