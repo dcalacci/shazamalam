@@ -83,7 +83,8 @@ def main(argv):
 	true_audio, suspect_audio = parse_args(argv)
 
 	#validate that these audio files are legit
-	if (not (read_audio.validate_input(true_audio) and read_audio.validate_input(suspect_audio))):
+	if (not (read_audio.validate_input(true_audio) and 
+		read_audio.validate_input(suspect_audio))):
 		sys.exit(2)
 
 	dstore = datastore.Datastore()
