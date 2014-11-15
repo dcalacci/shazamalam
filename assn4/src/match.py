@@ -93,11 +93,14 @@ def get_match(hash_tuples, dstore):
         song_name = dstore.get_song_file_from_id(song_id)
 
         if query_duration > 5 and db_duration > 5:
-            matches_to_return.append((song_name, query_start_time, db_start_time))
+            matches_to_return.append((song_name,
+                                      query_start_time,
+                                      db_start_time))
     return matches_to_return
 
+
 def is_match(fpath1, fpath2):
-    
+
     dstore = datastore.Datastore()
 
     #add first file
@@ -116,6 +119,7 @@ def is_match(fpath1, fpath2):
         match_data = match_data[0]
         return (match_data[2], match_data[1])
 
+
 def print_match(audio_1_path, match_data):
     """Prints matches according to black-box spec
     """
@@ -126,7 +130,8 @@ def print_match(audio_1_path, match_data):
         time_2 = "{0:0.1f}".format(match[2])
 
         # python will automatically include spaces between comma-deliniated elements
-        print "MATCH", basename(audio_1_path).lstrip(), basename(audio_2_path).lstrip(), time_1, time_2
+        print "MATCH", basename(audio_1_path).lstrip(), \
+            basename(audio_2_path).lstrip(), time_1, time_2
 
 
 #     def is_match(f1, f2):
