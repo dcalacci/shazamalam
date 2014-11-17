@@ -5,6 +5,8 @@ import getopt
 import sys
 import match
 import datastore
+import fingerprinting
+
 
 """
 This is the main executable file we'll run for assn4.
@@ -37,11 +39,11 @@ def parse_args(argv):
 
 	  #check number of options
 	  if(len(option_value_hash) < 2):
-	  	print 'ERROR: incorrect command line'
+	  	sys.stderr.write('ERROR incorrect command line arguments \n')
 	  	sys.exit(2)
 
 	except getopt.GetoptError:
-	  print 'ERROR: incorrect command line'
+	  sys.stderr.write('ERROR incorrect command line arguments \n')
 	  sys.exit(2)
 
 	#should we be given valid arguments, lets take a look
@@ -81,27 +83,23 @@ def main(argv):
 	true_audio, suspect_audio = parse_args(argv)
 
 	#validate that these audio files are legit
-	if (not (read_audio.validate_input(true_audio) 
-		and read_audio.validate_input(suspect_audio))):
+	if (not (read_audio.validate_input(true_audio) and 
+		read_audio.validate_input(suspect_audio))):
 		sys.exit(2)
+
+	dstore = datastore.Datastore()
 
 	true_audio = read_audio.create_file_array(true_audio)
 	suspect_audio = read_audio.create_file_array(suspect_audio)
 
-	#delete current tmp files if they exist
-	read_audio.delete_temp_file('/tmp/fingerprints.txt')
-	read_audio.delete_temp_file('/tmp/songs.txt')
+	for suspect_audio_path in suspect_audio:
+		dstore.add_fingerprints(suspect_audio_path)
 
-	for audio_path in true_audio:
-		datastore.add_fingerprints(audio_path)
-
-	matches = []
-	for audio_path in suspect_audio:
-		match_data = match.match_song_to_db(audio_path)
-		if match_data:
-			matches.append((audio_path, match_data))
-
-	print matches
+	for true_audio_path in true_audio:
+		samples = read_audio.get_mono(true_audio_path)
+		hashes = fingerprinting.get_fingerprints(samples)
+		match_data = match.get_match(hashes, dstore)
+		match.print_match(true_audio_path, match_data)
 
 #run maine (1: lops off the leading reference)
 main(sys.argv[1:])

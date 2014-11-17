@@ -1,25 +1,21 @@
 from collections import defaultdict
 from os.path import basename
-import datastore
 import fingerprinting
 import read_audio
+import datastore
 
 
 # threshold for number of matching fingerprints in a given time offset
 # to produce a match
-MATCH_THRESHOLD = 5
+MATCH_THRESHOLD = 60
 
 
-def get_matches_for_hashes(hashes):
+def get_matches_for_hashes(hashes, dstore):
     """ hashes are a list of (md5, offset, time)
     Returns a list of (song_id, offset_diff) for each match.
     """
-    # list of (md5, offset, song_id, time)
-    fprints = datastore.get_fingerprints()
-
-    # creates a dict of md5 -> (offset, song_id, time)
-    stored_hashes = {t[0]: (int(t[1]), int(t[2]), float(t[3]))
-                     for t in fprints}
+    # gets dict of md5 -> (offset, song_id, time)
+    stored_hashes = dstore.get_fingerprints()
 
     # get all tuples that match our hashes.
     # matches will contain a list of tuples of the form:
@@ -27,8 +23,9 @@ def get_matches_for_hashes(hashes):
     matches = []
     for h in hashes:
         if h[0] in stored_hashes:
-            db_offset, db_song_id, time = stored_hashes.get(h[0])
-            matches.append((h[0], db_offset, db_song_id, time))
+            # list of tuples (multiple database songs with same hash)
+            tuples = stored_hashes.get(h[0])
+            matches.extend([(h[0],) + t for t in tuples])
 
     # create a dictionary of our query song offsets from the hashes
     # {hash: offset}
@@ -49,195 +46,138 @@ def get_matches_for_hashes(hashes):
     return res
 
 
-def get_match(hash_tuples):
+def get_match(hash_tuples, dstore):
     """hash_tuples is a list of (MD5, offset) -> list of (songid, offset_dif)
     Assumes that what you're matching against is already in the datastore.
     """
-    most_likely_match = (None, 0, 0)
-    # {offset_diff: {song_id: #collisions} ...}
-    match_counter = defaultdict(lambda: defaultdict(int))
-    # (song_id, offset_diff)
-    matches = get_matches_for_hashes(hash_tuples)
-    for tup in matches:
-        song_id, offset_diff = tup[:2]
-        match_counter[offset_diff][song_id] += 1
-        # update the most likely song if the highest count changes.
-        count = match_counter[offset_diff][song_id]
-        if count > most_likely_match[1]:
-            most_likely_match = (song_id, count, offset_diff)
+    # (db_song_id, offset_diff, db_offset, query_time, db_time)
+    matches = get_matches_for_hashes(hash_tuples, dstore)
+    # make a dict of {song_name: {offset_diff: #collisions}}
+    # then, we can iterate through the dict and choose songs that
+    # have more than MATCH_THRESHOLD matches for some offset.
+    song_offset_counter = defaultdict(lambda: defaultdict(int))
+    for m in matches:
+        song_id, offset_diff = m[:2]
+        song_offset_counter[song_id][offset_diff] += 1
 
-    # the start time in the db is the earliest offset.
-    # the start time in the query is that - the offset difference.
+    likely_matches = []  # where we'll store all the matches
+    for song_id, diff_dict in song_offset_counter.iteritems():
+        offset_diff, max_count = max(diff_dict.iteritems(), key=lambda t: t[1])
+        if max_count < MATCH_THRESHOLD:
+            continue
+        # append it to our list of likely matches.
+        # we could also add a measure of confidence (how many matches
+        # above our threshold)
+        likely_matches.append((song_id, offset_diff))
 
-    # and the end time should be the fingerprint with the same offset_diff
-    # that has the largest sum of (offset + time_delta):
-    song_id = most_likely_match[0]
-    offset_diff = most_likely_match[2]
+    matches_to_return = []
+    for song_id, offset_diff in likely_matches:
+        # pick out hashes for which we have the right song id and the
+        # right offset difference
+        hashes = [match for match in matches
+                  if match[0] == song_id and match[1] == offset_diff]
 
-    # pick out hashes for which we have the right song id and the
-    # right offset difference
-    hashes = [match for match in matches
-              if match[0] == song_id and match[1] == offset_diff]
+        # find minimum by offset
+        start_peak = min(hashes, key=lambda t: t[2])
+        query_start_time = start_peak[3]
+        db_start_time = start_peak[4]
 
-    # find minimum by offset
-    start_peak = min(hashes, key=lambda t: t[2])
-    query_start_time = start_peak[3]
-    db_start_time = start_peak[4]
+        end_peak = max(hashes, key=lambda t: t[2])
+        query_end_time = end_peak[3]
+        db_end_time = end_peak[4]
+
+        query_duration = query_end_time - query_start_time
+        db_duration = db_end_time - db_start_time
+
+        # return the most likely song's ID and the start and end times:
+        song_name = dstore.get_song_file_from_id(song_id)
+
+        if query_duration > 5 and db_duration > 5:
+            matches_to_return.append((song_name,
+                                      query_start_time,
+                                      db_start_time))
+    return matches_to_return
 
 
-    # return the most likely song's ID and the start and end times:
-    song_name = datastore.get_song_file_from_id(most_likely_match[0])
-    #return (song_name, query_start, db_start)
-    return (song_name, query_start_time, db_start_time)
+def is_match(fpath1, fpath2):
 
+    dstore = datastore.Datastore()
 
-def is_match(f1, f2):
-    """Returns True if f1 matches to f2.
+    #add first file
+    dstore.add_fingerprints(fpath1)
 
-    Currently works by comparing the number of matched fingerprints
-    that occur at the same offset difference between the two songs.
+    #match second file
+    samples = read_audio.get_mono(fpath2)
+    hashes = fingerprinting.get_fingerprints(samples)
+    match_data = get_match(hashes, dstore)
 
-    If this number is greater than MATCH_THRESHOLD, then it returns
-    True.
+    print match_data
 
-    Wow, code reuse. Remind yourself to kick dan.
-    Not very :herb:
-
-    TODO: WHY IS THIS SO SLOW
-
-    """
-    mono1, mono2 = read_audio.get_mono(f1), read_audio.get_mono(f2)
-    prints1, prints2 = [dict(fingerprinting.get_fingerprints(m))
-                        for m in (mono1, mono2)]
-    shared_hashes = set(prints1.keys()).intersection(set(prints2.keys()))
-
-    # {offset_diff -> [(md5, offset1, offset2), ...]}
-    offset_dict = defaultdict(list)
-    match_counter = defaultdict(int)
-
-    max_count = 0
-    offset_difference = 0
-
-    for h in shared_hashes:
-        offset1, offset2 = prints1[h], prints2[h]
-        offset_diff = abs(offset1 - offset2)
-        offset_dict[offset_diff].append((h, offset1, offset2))
-        match_counter[offset_diff] += 1
-        count = match_counter[offset_diff]
-        if count > max_count:
-            max_count = count
-            offset_difference = offset_diff
-
-    if max_count > MATCH_THRESHOLD:
-        hashes = match_counter[offset_difference]
-        start1 = min(hashes, key=lambda t: t[1])[1]
-        start2 = min(hashes, key=lambda t: t[2])[2]
-
-        return (start1, start2)
-
-    else:
+    if len(match_data) == 0:
         return False
+    else:
+        match_data = match_data[0]
+        return (match_data[2], match_data[1])
 
 
-def final_print(audio_1_path, audio_2_path):
+def print_match(audio_1_path, match_data):
     """Prints matches according to black-box spec
     """
-    print "MATCH: ", basename(audio_1_path), " ", basename(audio_2_path)
+
+    for match in match_data:
+        audio_2_path = match[0]
+        time_1 = "{0:0.1f}".format(match[1])
+        time_2 = "{0:0.1f}".format(match[2])
+
+        # python will automatically include 
+        # spaces between comma-deliniated elements
+        print "MATCH", basename(audio_1_path).lstrip(), \
+            basename(audio_2_path).lstrip(), time_1, time_2
 
 
+#     def is_match(f1, f2):
+#     """Returns True if f1 matches to f2.
 
-# """
-# is_match:
-# Returns a boolean if we deem that f1 and f2 match
+#     Currently works by comparing the number of matched fingerprints
+#     that occur at the same offset difference between the two songs.
 
-# INPUT: 2 files that are valid file paths
-# OUTPUT: True if we deem the files match, otherwise False
-# """
-# def is_match(f1, f2):
+#     If this number is greater than MATCH_THRESHOLD, then it returns
+#     True.
 
-#     #preapre a string for our output
-#     match_threshold = 150000000000 # new threshold from new trial and error
-#     match_coefficient = 0
+#     Wow, code reuse. Remind yourself to kick dan.
+#     Not very :herb:
 
-#     if ( read_audio.is_mp3(f1) ):
-#         f1 = read_audio.create_temp_wav_file(f1)
-
-#     if ( read_audio.is_mp3(f2) ):
-#         f2 = read_audio.create_temp_wav_file(f2)
-
-#     """
-#     validate that the two files are of the same length
-#     """
-#     """TODO: Remove after ASSN 5"""
-#     if(read_audio.length(f1) != read_audio.length(f2)):
-#         read_audio.delete_temp_file(f1) # only deletes if /tmp is in filepath
-#         read_audio.delete_temp_file(f2)
-#         return False
-#     else:
-#         # get our match coefficient!
-#         match_coefficient = similarity(f1, f2)
-#         read_audio.delete_temp_file(f1) # only deletes if /tmp is in filepath
-#         read_audio.delete_temp_file(f2)
-
-#     #final print out to SDTOUT
-#     if(match_coefficient < match_threshold):
-#         return True
-#     else:
-#         return False
-
-
-# """
-# match_files:
-# Compares all files, prints matches
-
-# INPUT: 2 file arrays
-# OUTPUT: List of matches as tuples, also prints all matches
-# """
-# def match_files(a1, a2):
-#     matches = []
-#     for f1 in a1:
-#         for f2 in a2:
-#             result = is_match(f1,f2)
-#             if (result):
-#                 matches.append((f1,f2))
-#                 final_print(f1,f2)
-#     return matches
-
-# """
-# is_match:
-# Returns a boolean if we deem that f1 and f2 match
-
-# INPUT: 2 files that are valid file paths
-# OUTPUT: True if we deem the files match, otherwise False
-# """
-# def is_match(f1, f2):
-
-#     #preapre a string for our output
-#     match_threshold = 150000000000 # new threshold from new trial and error
-#     match_coefficient = 0
-
-#     if ( read_audio.is_mp3(f1) ):
-#         f1 = read_audio.create_temp_wav_file(f1)
-
-#     if ( read_audio.is_mp3(f2) ):
-#         f2 = read_audio.create_temp_wav_file(f2)
+#     TODO: WHY IS THIS SO SLOW
 
 #     """
-#     validate that the two files are of the same length
-#     """
-#     """TODO: Remove after ASSN 5"""
-#     if(read_audio.length(f1) != read_audio.length(f2)):
-#         read_audio.delete_temp_file(f1) # only deletes if /tmp is in filepath
-#         read_audio.delete_temp_file(f2)
-#         return False
-#     else:
-#         # get our match coefficient!
-#         match_coefficient = similarity(f1, f2)
-#         read_audio.delete_temp_file(f1) # only deletes if /tmp is in filepath
-#         read_audio.delete_temp_file(f2)
+#     mono1, mono2 = read_audio.get_mono(f1), read_audio.get_mono(f2)
+#     prints1, prints2 = [dict(fingerprinting.get_fingerprints(m))
+#                         for m in (mono1, mono2)]
+#     shared_hashes = set(prints1.keys()).intersection(set(prints2.keys()))
 
-#     #final print out to SDTOUT
-#     if(match_coefficient < match_threshold):
-#         return True
+#     # {offset_diff -> [(md5, offset1, offset2), ...]}
+#     offset_dict = defaultdict(list)
+#     match_counter = defaultdict(int)
+
+#     max_count = 0
+#     offset_difference = 0
+
+#     for h in shared_hashes:
+#         offset1, offset2 = prints1[h], prints2[h]
+#         offset_diff = abs(offset1 - offset2)
+#         offset_dict[offset_diff].append((h, offset1, offset2))
+#         match_counter[offset_diff] += 1
+#         count = match_counter[offset_diff]
+#         if count > max_count:
+#             max_count = count
+#             offset_difference = offset_diff
+
+#     if max_count > MATCH_THRESHOLD:
+#         hashes = match_counter[offset_difference]
+#         start1 = min(hashes, key=lambda t: t[1])[1]
+#         start2 = min(hashes, key=lambda t: t[2])[2]
+
+#         return (start1, start2)
+
 #     else:
 #         return False
