@@ -11,6 +11,8 @@ import subprocess
 LAME_CMD = ['/usr/bin/env', 'lame']
 #LAME_CMD = ['/course/cs4500f14/bin/lame']
 
+OGGDEC_CMD = ['usr/bin/env', 'oggdec']
+
 RESAMPLE_RATE = 44100
 
 
@@ -18,7 +20,9 @@ def get_mono(fpath):
     """ Converts the given wav file to 5512 PCM Mono.
     """
     if is_mp3(fpath):
-        fpath = create_temp_wav_file(fpath)
+        fpath = create_temp_wav_file_from_mp3(fpath)
+    elif is_ogg(fpath):
+        fpath = create_temp_wav_file_from_ogg(fpath)
     samplerate, channels = wavfile.read(fpath)
 
     # if the sample rate isn't already 44100, resample the file
@@ -161,8 +165,8 @@ def validate_input(audio_input):
     return False
 
 
-def create_temp_wav_file(file_path):
-    """Creates a temporary wav file from the given mp3 file.
+def create_temp_wav_file(file_path, cmd, args):
+    """Creates a temporary wav file from the given file.
 
     Returns the full path of the temporary wav file.
     """
@@ -170,16 +174,28 @@ def create_temp_wav_file(file_path):
     # test if user has lame in system, do subprocess call
     # output to /dev/null
     FNULL = open(os.devnull, 'w')
-    args = ['-V2', '--silent', '--decode', file_path, new_wav_file_path]
-    res = subprocess.call(LAME_CMD + args,
+    res = subprocess.call(cmd + args,
                           stdout=FNULL,
                           stderr=subprocess.STDOUT)
 
     if res != 0:
-        raise Exception("Call to lame failed. It's either not \
+        raise Exception("Call to " + cmd + " failed. It's either not \
         installed or it failed the conversion.")
 
+def create_temp_wav_file_from_mp3(file_path):
+    new_wav_file_path = create_temp_wav_file_path(file_path)
+    args = ['-V2', '--silent', '--decode', file_path, new_wav_file_path]
+    create_temp_wav_file(file_path, LAME_CMD, args)
     return new_wav_file_path
+
+def create_temp_wav_file_from_ogg(file_path):
+    new_wav_file_path = create_temp_wav_file_path(file_path)
+    args = ['-o', new_wav_file_path, file_path]
+    create_temp_wav_file(file_path, OGGDEC_CMD, args)
+    return new_wav_file_path
+
+def create_temp_wav_file_path(file_path):
+    return '/tmp/' + basename(file_path).split('.')[0] + '.wav'
 
 
 def delete_temp_file(file_path):
