@@ -76,6 +76,27 @@ def is_mp3(file):
     return True
 
 
+def is_ogg(file):
+    """
+    is_ogg:
+    Given a file path, determine if the file is not only an ogg,
+    but one with the right specifications.
+
+    INPUT: A file path (at the stage is_ogg is called, we know
+    that the file is a valid file that exists so we dont check for it)
+    OUTPUT: True if and only if the file path is in a
+    format that version 1.4.0 of the oggdec program will decode
+    into a supported WAVE format without the use of any
+    command-line options
+    """
+    if(file[-4:] != ".ogg"):
+        return False
+
+    # check to make sure it's in the right format
+
+    return True
+
+
 def create_file_array(audio_input):
     """
     create_file_array:
@@ -114,6 +135,8 @@ def validate_file(file_input):
         sys.stderr.write(error)
     except wave.Error:
         if is_mp3(file_input):
+            return True
+        if is_ogg(file_input):
             return True
 
         error = 'ERROR file ' + short_name + ' is not a supported format \n'
