@@ -182,17 +182,20 @@ def create_temp_wav_file(file_path, cmd, args):
         raise Exception("Call to " + cmd + " failed. It's either not \
         installed or it failed the conversion.")
 
+
 def create_temp_wav_file_from_mp3(file_path):
     new_wav_file_path = create_temp_wav_file_path(file_path)
     args = ['-V2', '--silent', '--decode', file_path, new_wav_file_path]
     create_temp_wav_file(file_path, LAME_CMD, args)
     return new_wav_file_path
 
+
 def create_temp_wav_file_from_ogg(file_path):
     new_wav_file_path = create_temp_wav_file_path(file_path)
     args = ['-o', new_wav_file_path, file_path]
     create_temp_wav_file(file_path, OGGDEC_CMD, args)
     return new_wav_file_path
+
 
 def create_temp_wav_file_path(file_path):
     return '/tmp/' + basename(file_path).split('.')[0] + '.wav'
