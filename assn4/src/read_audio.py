@@ -8,10 +8,10 @@ import os
 import sys
 import subprocess
 
-LAME_CMD = ['/usr/bin/env', 'lame']
-#LAME_CMD = ['/course/cs4500f14/bin/lame']
+#LAME_CMD = ['/usr/bin/env', 'lame']
+LAME_CMD = ['/course/cs4500f14/bin/lame']
 
-OGGDEC_CMD = ['usr/bin/env', 'oggdec']
+OGGDEC_CMD = ['/usr/bin/env', 'oggdec']
 
 RESAMPLE_RATE = 44100
 
@@ -24,6 +24,8 @@ def get_mono(fpath):
     elif is_ogg(fpath):
         fpath = create_temp_wav_file_from_ogg(fpath)
     samplerate, channels = wavfile.read(fpath)
+
+    delete_temp_file(fpath)
 
     # if the sample rate isn't already 44100, resample the file
     if samplerate != RESAMPLE_RATE:
@@ -176,17 +178,14 @@ def create_temp_wav_file(file_path, cmd, args):
 
     Returns the full path of the temporary wav file.
     """
-    new_wav_file_path = '/tmp/' + basename(file_path).split('.')[0] + '.wav'
-    # test if user has lame in system, do subprocess call
+    new_wav_file_path = create_temp_wav_file_path(file_path)
     # output to /dev/null
     FNULL = open(os.devnull, 'w')
     res = subprocess.call(cmd + args,
                           stdout=FNULL,
                           stderr=subprocess.STDOUT)
-
     if res != 0:
-        raise Exception("Call to " + cmd + " failed. It's either not \
-        installed or it failed the conversion.")
+        raise Exception("Call to " + str(cmd) + " failed. It's either not installed or it failed the conversion.")
 
 
 def create_temp_wav_file_from_mp3(file_path):
@@ -203,10 +202,12 @@ def create_temp_wav_file_from_ogg(file_path):
     return new_wav_file_path
 
 
+TMP_FILE_DIR = '/scratch/dcalacci/'
+
 def create_temp_wav_file_path(file_path):
-    return '/tmp/' + basename(file_path).split('.')[0] + '.wav'
+    return os.path.join(TMP_FILE_DIR,  basename(file_path).split('.')[0] + '.wav')
 
 
 def delete_temp_file(file_path):
-    if '/tmp' in file_path:
+    if TMP_FILE_DIR in file_path:
         os.system('rm -f ' + file_path)

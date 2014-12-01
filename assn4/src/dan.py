@@ -102,7 +102,5 @@ def main(argv):
 		match.print_match(true_audio_path, match_data)
 
 #run maine (1: lops off the leading reference)
-try:
-	main(sys.argv[1:])
-except:
-	sys.exit(2)
+
+main(sys.argv[1:])
