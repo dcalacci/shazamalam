@@ -93,10 +93,16 @@ def is_ogg(file):
     into a supported WAVE format without the use of any
     command-line options
     """
+    # check the extension on the file
     if(file[-4:] != ".ogg"):
         return False
 
     # check to make sure it's in the right format
+    file_header = subprocess.check_output(["file", file])
+    data_string = "Ogg data"
+    
+    if data_string not in file_header
+        return False
 
     return True
 
