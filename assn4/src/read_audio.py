@@ -7,6 +7,7 @@ import wave
 import os
 import sys
 import subprocess
+import re
 
 LAME_CMD = ['/usr/bin/env', 'lame']
 #LAME_CMD = ['/course/cs4500f14/bin/lame']
@@ -69,6 +70,12 @@ def is_mp3(file):
 
     # then, check that its the right format
     file_header = subprocess.check_output(["file", file])
+    
+    # our file may be a symbolic link, check for that
+    # and reassign file header to the end of the link
+    if "symbolic link" in file_header:
+        file_header = re.split('[`\']', file_header)[1]
+    
     format_string = "MPEG"
     layer_string = "layer III"
     version_string = "v1"
@@ -97,11 +104,16 @@ def is_ogg(file):
     if(file[-4:] != ".ogg"):
         return False
 
+    # our file may be a symbolic link, check for that
+    # and reassign file header to the end of the link
+    if "symbolic link" in file_header:
+        file_header = re.split('[`\']', file_header)[1]
+
     # check to make sure it's in the right format
     file_header = subprocess.check_output(["file", file])
     data_string = "Ogg data"
     
-    if data_string not in file_header
+    if data_string not in file_header:
         return False
 
     return True
