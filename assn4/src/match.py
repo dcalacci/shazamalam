@@ -7,7 +7,7 @@ import datastore
 
 # threshold for number of matching fingerprints in a given time offset
 # to produce a match
-MATCH_THRESHOLD = 60
+MATCH_THRESHOLD = 40
 
 
 def get_matches_for_hashes(hashes, dstore):
@@ -96,6 +96,9 @@ def get_match(hash_tuples, dstore):
             matches_to_return.append((song_name,
                                       query_start_time,
                                       db_start_time))
+        else:
+            print "> NOT 5 Seconds: ", song_name
+            print ">", query_duration, "/", db_duration
     return matches_to_return
 
 
