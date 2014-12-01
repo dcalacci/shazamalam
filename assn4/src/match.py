@@ -98,7 +98,7 @@ def get_match(hash_tuples, dstore, audio_path):
             matches_to_return.append((song_name,
                                       query_start_time,
                                       db_start_time))
-        #else:
+        else:
             print "> NOT 5 Seconds: ", song_name, audio_path
             #print "query times:", [l[3] for l in sorted(hashes, key=lambda t: t[2])]
             #print "db times:", [l[4] for l in sorted(hashes, key=lambda t: t[2])]
