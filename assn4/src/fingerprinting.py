@@ -114,7 +114,7 @@ def hash_peaks(filtered_peaks, times):
         potential_pairs = [p for p in potential_pairs if p[0] - peak[0]
                            < FINGERPRINT_TIME_DELTA]
         # create the (f1, f2, time_delta) tuples
-        prints = [(peak[1], p[1], (p[0] - peak[0])) for p in potential_pairs if (p[0] - peak[0]) > 0]
+        prints = [(peak[1], p[1], (p[0] - peak[0])) for p in potential_pairs]
         # hash them, add the offset
         # of the form (MD5, time)
         for fprint in prints:
