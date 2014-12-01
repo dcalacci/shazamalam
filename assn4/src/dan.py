@@ -98,7 +98,7 @@ def main(argv):
 	for true_audio_path in true_audio:
 		samples = read_audio.get_mono(true_audio_path)
 		hashes = fingerprinting.get_fingerprints(samples)
-		match_data = match.get_match(hashes, dstore)
+		match_data = match.get_match(hashes, dstore, true_audio_path)
 		match.print_match(true_audio_path, match_data)
 
 #run maine (1: lops off the leading reference)

@@ -106,13 +106,15 @@ def is_ogg(file):
     if(file[-4:] != ".ogg"):
         return False
 
+    # then, check that its the right format
+    file_header = subprocess.check_output(["file", file])
+
     # our file may be a symbolic link, check for that
     # and reassign file header to the end of the link
     if "symbolic link" in file_header:
         file_header = re.split('[`\']', file_header)[1]
 
     # check to make sure it's in the right format
-    file_header = subprocess.check_output(["file", file])
     data_string = "Ogg data"
     
     if data_string not in file_header:
@@ -185,17 +187,17 @@ def validate_input(audio_input):
     return False
 
 
-def create_temp_wav_file(file_path, cmd, args):
+def create_temp_wav_file(cmd, args):
     """Creates a temporary wav file from the given file.
 
     Returns the full path of the temporary wav file.
     """
-    new_wav_file_path = create_temp_wav_file_path(file_path)
     # output to /dev/null
     FNULL = open(os.devnull, 'w')
     res = subprocess.call(cmd + args,
                           stdout=FNULL,
                           stderr=subprocess.STDOUT)
+
     if res != 0:
         raise Exception("Call to " + str(cmd) + " failed. It's either not installed or it failed the conversion.")
 
@@ -203,18 +205,18 @@ def create_temp_wav_file(file_path, cmd, args):
 def create_temp_wav_file_from_mp3(file_path):
     new_wav_file_path = create_temp_wav_file_path(file_path)
     args = ['-V2', '--silent', '--decode', file_path, new_wav_file_path]
-    create_temp_wav_file(file_path, LAME_CMD, args)
+    create_temp_wav_file(LAME_CMD, args)
     return new_wav_file_path
 
 
 def create_temp_wav_file_from_ogg(file_path):
     new_wav_file_path = create_temp_wav_file_path(file_path)
     args = ['-o', new_wav_file_path, file_path]
-    create_temp_wav_file(file_path, OGGDEC_CMD, args)
+    create_temp_wav_file(OGGDEC_CMD, args)
     return new_wav_file_path
 
 
-TMP_FILE_DIR = '/scratch/dcalacci/'
+TMP_FILE_DIR = '/scratch/lhaber9/'
 
 def create_temp_wav_file_path(file_path):
     return os.path.join(TMP_FILE_DIR,  basename(file_path).split('.')[0] + '.wav')

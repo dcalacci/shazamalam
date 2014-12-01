@@ -7,7 +7,7 @@ import datastore
 
 # threshold for number of matching fingerprints in a given time offset
 # to produce a match
-MATCH_THRESHOLD = 40
+MATCH_THRESHOLD = 30
 
 
 def get_matches_for_hashes(hashes, dstore):
@@ -46,7 +46,7 @@ def get_matches_for_hashes(hashes, dstore):
     return res
 
 
-def get_match(hash_tuples, dstore):
+def get_match(hash_tuples, dstore, audio_path):
     """hash_tuples is a list of (MD5, offset) -> list of (songid, offset_dif)
     Assumes that what you're matching against is already in the datastore.
     """
@@ -73,7 +73,7 @@ def get_match(hash_tuples, dstore):
     matches_to_return = []
     for song_id, offset_diff in likely_matches:
         # pick out hashes for which we have the right song id and the
-        # right offset difference
+        # right offset dzifference
         hashes = [match for match in matches
                   if match[0] == song_id and match[1] == offset_diff]
 
@@ -89,6 +89,8 @@ def get_match(hash_tuples, dstore):
         query_duration = query_end_time - query_start_time
         db_duration = db_end_time - db_start_time
 
+        
+
         # return the most likely song's ID and the start and end times:
         song_name = dstore.get_song_file_from_id(song_id)
 
@@ -96,9 +98,14 @@ def get_match(hash_tuples, dstore):
             matches_to_return.append((song_name,
                                       query_start_time,
                                       db_start_time))
-        else:
-            print "> NOT 5 Seconds: ", song_name
-            print ">", query_duration, "/", db_duration
+        #else:
+            print "> NOT 5 Seconds: ", song_name, audio_path
+            #print "query times:", [l[3] for l in sorted(hashes, key=lambda t: t[2])]
+            #print "db times:", [l[4] for l in sorted(hashes, key=lambda t: t[2])]
+            #print sorted(hashes, key=lambda t: t[2])
+            print ">", query_start_time, "/", query_end_time
+            print ">", db_start_time, "/", db_end_time
+            #print ">", query_duration, "/", db_duration
     return matches_to_return
 
 
