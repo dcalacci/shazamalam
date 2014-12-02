@@ -13,8 +13,8 @@ WINDOW_SIZE = 2048  # granularity of chunks
 SAMPLE_RATE = 44100  # we resample to this
 OVERLAP_RATIO = 0.5  # amount our chunks can overlap
 AMPLITUDE_THRESHOLD = 40  # the minimum amplitude to keep for a peak
-FINGERPRINT_PAIR_DISTANCE = 19  # the farthest a pair can be apart
-FINGERPRINT_TIME_DELTA = 40  # the farthest a pair can be apart in time
+FINGERPRINT_PAIR_DISTANCE = 20  # the farthest a pair can be apart
+FINGERPRINT_TIME_DELTA = 100  # the farthest a pair can be apart in time
 NEIGHBORHOOD_SIZE = 5  # size of neighborhood for peak finding
 
 
@@ -109,10 +109,12 @@ def hash_peaks(filtered_peaks, times):
     fingerprints = []
     for i, peak in enumerate(sorted_peaks):
         # get all peaks within `fingerprint_pairs` of the current peak
-        potential_pairs = sorted_peaks[i+1:i+FINGERPRINT_PAIR_DISTANCE]
+        potential_pairs = sorted_peaks[i+2:i+FINGERPRINT_PAIR_DISTANCE]
         # get rid of the ones that are too far away in time
         potential_pairs = [p for p in potential_pairs if p[0] - peak[0]
                            < FINGERPRINT_TIME_DELTA]
+        # get rid of pairs that are made from the same time bins
+        potential_pairs = [p for p in potential_pairs if (p[0] - peak[0]) > 0]
         # create the (f1, f2, time_delta) tuples
         prints = [(peak[1], p[1], (p[0] - peak[0])) for p in potential_pairs]
         # hash them, add the offset

@@ -7,7 +7,7 @@ import datastore
 
 # threshold for number of matching fingerprints in a given time offset
 # to produce a match
-MATCH_THRESHOLD = 30
+MATCH_THRESHOLD = 55
 
 
 def get_matches_for_hashes(hashes, dstore):
@@ -89,8 +89,6 @@ def get_match(hash_tuples, dstore, audio_path):
         query_duration = query_end_time - query_start_time
         db_duration = db_end_time - db_start_time
 
-        
-
         # return the most likely song's ID and the start and end times:
         song_name = dstore.get_song_file_from_id(song_id)
 
@@ -98,13 +96,14 @@ def get_match(hash_tuples, dstore, audio_path):
             matches_to_return.append((song_name,
                                       query_start_time,
                                       db_start_time))
-        else:
-            print "> NOT 5 Seconds: ", song_name, audio_path
+#        else:
+#            print "> NOT 5 Seconds: ", song_name, audio_path
             #print "query times:", [l[3] for l in sorted(hashes, key=lambda t: t[2])]
             #print "db times:", [l[4] for l in sorted(hashes, key=lambda t: t[2])]
             #print sorted(hashes, key=lambda t: t[2])
-            print ">", query_start_time, "/", query_end_time
-            print ">", db_start_time, "/", db_end_time
+
+#            print ">", query_start_time, "/", query_end_time
+#            print ">", db_start_time, "/", db_end_time
             #print ">", query_duration, "/", db_duration
     return matches_to_return
 
@@ -143,51 +142,3 @@ def print_match(audio_1_path, match_data):
         # spaces between comma-deliniated elements
         print "MATCH", basename(audio_1_path).lstrip(), \
             basename(audio_2_path).lstrip(), time_1, time_2
-
-
-#     def is_match(f1, f2):
-#     """Returns True if f1 matches to f2.
-
-#     Currently works by comparing the number of matched fingerprints
-#     that occur at the same offset difference between the two songs.
-
-#     If this number is greater than MATCH_THRESHOLD, then it returns
-#     True.
-
-#     Wow, code reuse. Remind yourself to kick dan.
-#     Not very :herb:
-
-#     TODO: WHY IS THIS SO SLOW
-
-#     """
-#     mono1, mono2 = read_audio.get_mono(f1), read_audio.get_mono(f2)
-#     prints1, prints2 = [dict(fingerprinting.get_fingerprints(m))
-#                         for m in (mono1, mono2)]
-#     shared_hashes = set(prints1.keys()).intersection(set(prints2.keys()))
-
-#     # {offset_diff -> [(md5, offset1, offset2), ...]}
-#     offset_dict = defaultdict(list)
-#     match_counter = defaultdict(int)
-
-#     max_count = 0
-#     offset_difference = 0
-
-#     for h in shared_hashes:
-#         offset1, offset2 = prints1[h], prints2[h]
-#         offset_diff = abs(offset1 - offset2)
-#         offset_dict[offset_diff].append((h, offset1, offset2))
-#         match_counter[offset_diff] += 1
-#         count = match_counter[offset_diff]
-#         if count > max_count:
-#             max_count = count
-#             offset_difference = offset_diff
-
-#     if max_count > MATCH_THRESHOLD:
-#         hashes = match_counter[offset_difference]
-#         start1 = min(hashes, key=lambda t: t[1])[1]
-#         start2 = min(hashes, key=lambda t: t[2])[2]
-
-#         return (start1, start2)
-
-#     else:
-#         return False

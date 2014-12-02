@@ -7,9 +7,7 @@ import wave
 import os
 import sys
 import subprocess
-import re
 #debugging
-import pdb
 
 #LAME_CMD = ['/usr/bin/env', 'lame']
 LAME_CMD = ['/course/cs4500f14/bin/lame']
@@ -55,24 +53,20 @@ def is_directory(audio_input):
     return audio_input[0] == "-d"
 
 
-def linked_file(file):
+def linked_file(fpath):
     """
     linked_file:
-    Given a file path, it might be a symbolic link and we 
+    Given a file path, it might be a symbolic link and we
     want to return the file it links to. If its not a symbolic
-    link, then just return the file as is. 
-    
+    link, then just return the file as is.
+
     INPUT: a file path
     OUTPT: a file path
     """
-    linked_file = file
-    # our file may be a symbolic link, check for that
-    # and reassign file header to the end of the link
-    file_header = subprocess.check_output(["file", file])
-    if "symbolic link" in file_header:
-        linked_file = re.split('[`\']', file_header)[1]
-        
-    return linked_file
+    if os.path.islink(fpath):
+        return os.path.realpath(fpath)
+    return fpath
+
 
 def is_mp3(file):
     """
@@ -127,10 +121,10 @@ def is_ogg(file):
     # then, check that its the right format
     fpath = linked_file(file)
     file_header = subprocess.check_output(["file", fpath])
-        
+
     # check to make sure it's in the right format
     data_string = "Ogg data"
-    
+
     if data_string not in file_header:
         return False
 
@@ -230,7 +224,7 @@ def create_temp_wav_file_from_ogg(file_path):
     return new_wav_file_path
 
 
-TMP_FILE_DIR = '/scratch/petey3/'
+TMP_FILE_DIR = '/scratch/dcalacci/'
 
 def create_temp_wav_file_path(file_path):
     return os.path.join(TMP_FILE_DIR,  basename(file_path).split('.')[0] + '.wav')
