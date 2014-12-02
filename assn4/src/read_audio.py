@@ -8,6 +8,8 @@ import os
 import sys
 import subprocess
 import re
+#debugging
+import pdb
 
 #LAME_CMD = ['/usr/bin/env', 'lame']
 LAME_CMD = ['/course/cs4500f14/bin/lame']
@@ -18,8 +20,9 @@ RESAMPLE_RATE = 44100
 
 
 def get_mono(fpath):
-    """ Converts the given wav file to 5512 PCM Mono.
+    """ Converts the given wav file to 5512 PCM pdb.
     """
+    fpath = linked_file(fpath)
     if is_mp3(fpath):
         fpath = create_temp_wav_file_from_mp3(fpath)
     elif is_ogg(fpath):
@@ -52,6 +55,25 @@ def is_directory(audio_input):
     return audio_input[0] == "-d"
 
 
+def linked_file(file):
+    """
+    linked_file:
+    Given a file path, it might be a symbolic link and we 
+    want to return the file it links to. If its not a symbolic
+    link, then just return the file as is. 
+    
+    INPUT: a file path
+    OUTPT: a file path
+    """
+    linked_file = file
+    # our file may be a symbolic link, check for that
+    # and reassign file header to the end of the link
+    file_header = subprocess.check_output(["file", file])
+    if "symbolic link" in file_header:
+        linked_file = re.split('[`\']', file_header)[1]
+        
+    return linked_file
+
 def is_mp3(file):
     """
     is_mp3:
@@ -71,12 +93,8 @@ def is_mp3(file):
         return False
 
     # then, check that its the right format
-    file_header = subprocess.check_output(["file", file])
-    
-    # our file may be a symbolic link, check for that
-    # and reassign file header to the end of the link
-    if "symbolic link" in file_header:
-        file_header = re.split('[`\']', file_header)[1]
+    fpath = linked_file(file)
+    file_header = subprocess.check_output(["file", fpath])
     
     format_string = "MPEG"
     layer_string = "layer III"
@@ -107,13 +125,9 @@ def is_ogg(file):
         return False
 
     # then, check that its the right format
-    file_header = subprocess.check_output(["file", file])
-
-    # our file may be a symbolic link, check for that
-    # and reassign file header to the end of the link
-    if "symbolic link" in file_header:
-        file_header = re.split('[`\']', file_header)[1]
-
+    fpath = linked_file(file)
+    file_header = subprocess.check_output(["file", fpath])
+        
     # check to make sure it's in the right format
     data_string = "Ogg data"
     
@@ -216,7 +230,7 @@ def create_temp_wav_file_from_ogg(file_path):
     return new_wav_file_path
 
 
-TMP_FILE_DIR = '/scratch/lhaber9/'
+TMP_FILE_DIR = '/scratch/petey3/'
 
 def create_temp_wav_file_path(file_path):
     return os.path.join(TMP_FILE_DIR,  basename(file_path).split('.')[0] + '.wav')
