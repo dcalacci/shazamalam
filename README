@@ -1,28 +1,27 @@
 shazamalam
 ==========
 
-Team Members:
+TEAM ZERO's killer code for finding copyrighted audio.
+
+it takes two directories, a directory of original audio files, and a
+directory of audio files that may have used pieces from files in the
+first directory. The output is a list of potential matches, and the
+start time of those matches in the audio files that use the original
+audio.
+
+For a summary of our strategy, check out `notebooks/fingerprinting.ipynb`
+
+We do a nasty spectral analysis of the audio files, creating sick
+audio fingerprints that consist of rad pairs of peak
+frequencies. Check it out.
+
+
+Our Awesome Team Members:
 - Dan Calacci	(calacci.d@husky.neu.edu)
 - Lucas Haber	(haber.l@husky.neu.edu)
 - Eric Peterson (peterson.er@husky.neu.edu)
 - Talia Swartz	(swartz.t@husky.neu.edu)
 
-
-Once the tar.gz has been unzipped, navigate to the 
-directory containing its contents and run this 
-command to create the executable:
-
-> chmod +x dan
-
-After that ./dan should be available from this
-directory as defined at:
-
-http://www.ccs.neu.edu/course/cs4500f14/assignment6.txt
-
-The only third party software used is the LAME
-encoder, the standard linux ‘file’ command and
-the standard python libraries found on the 
-CCIS Linux machines
 
 
 
